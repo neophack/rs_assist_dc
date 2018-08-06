@@ -23,7 +23,7 @@ for d in devices:
     sn = d.get_info(rs.camera_info.serial_number)
     try:
         sn_list.append(int(sn))
-    finally:
+    except:
         continue
 assert len(sn_list) >= 2, 'len sn_list: {}'.format(len(sn_list))
 
