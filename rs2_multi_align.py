@@ -66,6 +66,11 @@ if not os.path.exists(cam_dir_1):
 if not os.path.exists(cam_dir_2):
     os.makedirs(os.path.join(cam_dir_2, 'depth'))
     os.makedirs(os.path.join(cam_dir_2, 'color'))
+with open(os.path.join(cam_dir_1, 'sn.txt'), 'wb') as fout:
+    fout.write(sn_list[0] + '\n')
+with open(os.path.join(cam_dir_2, 'sn.txt'), 'wb') as fout:
+    fout.write(sn_list[1] + '\n')
+
 
 print 'start saving images ...'
 try:
