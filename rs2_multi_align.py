@@ -64,10 +64,17 @@ if not os.path.exists(cam_dir_1):
 if not os.path.exists(cam_dir_2):
     os.makedirs(os.path.join(cam_dir_2, 'depth'))
     os.makedirs(os.path.join(cam_dir_2, 'color'))
+
+print 'start saving images ...'
 try:
+    last_tm = time.time()
     while True:
 
         tm = str(int(time.time() * 1000))
+        current_tm = time.time()
+        if current_tm - last_tm > 1:
+            last_tm = current_tm
+            print 'saving: ', current_tm
         # Camera 1
         # Wait for a coherent pair of frames: depth and color
         frames_1 = pipeline_1.wait_for_frames()
@@ -104,7 +111,7 @@ try:
         with open(depth_path_2, 'wb') as fout:
             fout.write(depth_image_2.astype(np.uint16).tobytes())
         cv2.imwrite(color_path_2, color_image_2)
-        ch = cv2.waitKey(200)
+        time.sleep(200)
 
 finally:
     # Stop streaming
