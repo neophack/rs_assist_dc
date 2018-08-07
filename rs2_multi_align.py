@@ -34,19 +34,21 @@ for d in devices:
 assert len(sn_list) >= 2, 'len sn_list: {}'.format(len(sn_list))
 
 
+WIDTH = 640
+HEIGHT = 480
 # Configure depth and color streams...
 # ...from Camera 1
 pipeline_1 = rs.pipeline()
 config_1 = rs.config()
 config_1.enable_device(sn_list[0])
-config_1.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+config_1.enable_stream(rs.stream.depth, WIDTH, HEIGHT, rs.format.z16, 30)
+config_1.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, 30)
 # ...from Camera 2
 pipeline_2 = rs.pipeline()
 config_2 = rs.config()
 config_2.enable_device(sn_list[1])
-config_2.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-config_2.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+config_2.enable_stream(rs.stream.depth, WIDTH, HEIGHT, rs.format.z16, 30)
+config_2.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, 30)
 
 
 # Start streaming from both cameras
