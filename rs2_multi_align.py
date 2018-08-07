@@ -113,7 +113,7 @@ try:
         with open(depth_path_2, 'wb') as fout:
             fout.write(depth_image_2.astype(np.uint16).tobytes())
         cv2.imwrite(color_path_2, color_image_2)
-        time.sleep(200)
+        time.sleep(0.3)
 
 finally:
     # Stop streaming
