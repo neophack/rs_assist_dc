@@ -1,0 +1,3 @@
+/Users/wangxiao05/codes/rs_assist_dc/shel-cam-3d/CMakeFiles/rebuild_cache.dir
+/Users/wangxiao05/codes/rs_assist_dc/shel-cam-3d/CMakeFiles/edit_cache.dir
+/Users/wangxiao05/codes/rs_assist_dc/shel-cam-3d/CMakeFiles/shel_cam_3d.dir

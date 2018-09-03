@@ -1,0 +1,12 @@
+- format
+  - the code only supports .pnm format, there is work to be done to support our data
+  - http://ziin.pl/en/utilities/convert to manually convert
+- set
+  - we are using 36h11 (recommended)
+  - marker pdf is checked in (need upsample image if we want more patterns)
+- sample usage
+  - ./apriltag_demo -f tag36h11 ./testapril_3.pnm
+  - we can now run and identify the marker, but the results need to be parsed
+  - the results have to be transferred into OpenCV usable format
+- others
+  - https://github.com/swatbotics/apriltags-cpp cpp version, need check
