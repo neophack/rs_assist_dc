@@ -154,7 +154,7 @@ class Calibrator(object):
                 dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename)
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
-                print v, dst_path
+                print 'calib data copy', v, dst_path
                 shutil.copy(v, dst_path)
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):

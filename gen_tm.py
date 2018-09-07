@@ -15,6 +15,8 @@ import time
 import sys
 import os
 import commands
+import json
+from aicam_server.cam_cap import get_image
 
 
 def run():
@@ -62,11 +64,16 @@ def run():
 def run1():
     """Data collection pipeline."""
     from align_all_sensor import reconstruct_calib_data
-    from align_all_sensor import PerLineLabler
-    import get_cam
+    from align_all_sensor import Calibrator
+    from align_all_sensor import MultiCamGrabLabeler
     base_dir = 'data/batch4'
     calib = Calibrator(base_dir, resize_xeye=True)
     labeler = MultiCamGrabLabeler(base_dir, resize_xeye=True)
+    # throw garbage image
+    throw_away = get_image()
+    print 'throw away:', throw_away
+    throw_away = get_image()
+    print 'throw away:', throw_away
 
 
 
@@ -90,11 +97,15 @@ def run1():
                 line = '\t'.join(items)
                 print line
                 print >> fout, line
-                file_dict = get_cam()
+                file_dict = get_image()
+                # print 'file_dict', json.dumps(file_dict, indent=2)
      
                 if prefix == 'calib':
+                    print 'file_dict', json.dumps(file_dict, indent=2)
                     calib.add_files(file_dict)
                 else:
+                    print 'add file_dict to labeler'
+                    print 'file_dict', json.dumps(file_dict, indent=2)
                     labeler.add_files(file_dict)
                     labeler.gen_label()
                 items = []
