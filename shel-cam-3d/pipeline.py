@@ -45,7 +45,7 @@ def get_obj_region(intrinsic_path, extrinsic_path, rgb_path0, rgb_path1, depth_p
     if ':' not in items[-1]:
         return [], 0
     region = [tuple(e.split(',')) for e in items[-1].split(':') if e]
-    # print 'region:', region
+    print 'items:', items[: -1]
     region = [(float(x), float(y)) for x, y in region]
     region_diff = float(items[-2])
     return region, region_diff
@@ -117,7 +117,7 @@ def infer_object(region_info):
 
 def get_region_sequence(intrinsic_path, extrinsic_path, rgb_seq, depth_seq, rgb_camid, depth_camid):
     """Describe this func with one line."""
-    assert(len(rgb_seq) == len(depth_seq))
+    assert(len(rgb_seq) == len(depth_seq)), '{}\n{}'.format(rgb_seq, depth_seq)
     res_seq = []
     for i in range(1, len(rgb_seq)):
         region, region_diff = get_obj_region(intrinsic_path, extrinsic_path, rgb_seq[i - 1], rgb_seq[i],
@@ -233,7 +233,8 @@ def make_display_image(res_info, rot_rect, background_img=None):
     return img_show
 
 
-def display_region_sequence(res_seq, suffix='', rot_rect=False, draw_on_last=False):
+def display_region_sequence(res_seq, suffix='', save_dir='./', rot_rect=False, draw_on_last=False,
+                            show_each_step=True):
     import cv2
     count = 0
     display_image = None
@@ -257,7 +258,12 @@ def display_region_sequence(res_seq, suffix='', rot_rect=False, draw_on_last=Fal
         else:
             display_image = make_display_image(res, rot_rect, None)
         name = str(1000000 + count)[1:]
-        cv2.imwrite('%s%s.jpg' % (name, suffix), display_image)
+        filepath = os.path.join(save_dir, '%s%s.jpg' % (name, suffix))
+        if show_each_step:
+            print 'show result'
+            cv2.imshow('Show result', display_image)
+            cv2.waitKey(0)
+        cv2.imwrite(filepath, display_image)
         count += 1
 
 

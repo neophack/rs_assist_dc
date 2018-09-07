@@ -12,4 +12,4 @@ num_camera=`ls ${folder_path} | wc -l `
 	-folder_path $folder_path  \
 	-output_folder $output_folder \
 	-num_camera $num_camera \
-	-show_reproj_det \
+	# -show_reproj_det \

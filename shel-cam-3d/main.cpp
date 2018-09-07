@@ -208,6 +208,7 @@ int main(int argc, char **argv) {
         cv::Mat depth_img_pre(480, 640,  CV_16UC1, img_buffer1.data());
         cv::Mat depth_img(480, 640, CV_16UC1, img_buffer2.data());
 
+
         cv::Mat depth_diff;
         cv::absdiff(depth_img_pre, depth_img, depth_diff);
         depth_diff.convertTo(depth_diff, CV_8U);
@@ -238,22 +239,25 @@ int main(int argc, char **argv) {
         if (area_largest > 2000) {
             cv::drawContours(mask, polys, ind_largest, 255, -1);
         }
-
+        // LOG(INFO) << 'mask:' << mask;
         // mask to label
         cv::Mat region_diff = cv::Mat::zeros(depth_img_pre.size(), CV_32F);
         depth_img_pre.copyTo(region_diff, mask);
 
         cv::Mat region_diff1 = cv::Mat::zeros(depth_img.size(), CV_32F);
         depth_img.copyTo(region_diff1, mask);
-        cv::Mat diff = region_diff1 - region_diff;
+        // cv::Mat diff = region_diff1 - region_diff;
         double sum = cv::sum(region_diff1)[0] - cv::sum(region_diff)[0];
 
         std::vector<cv::Point2f> region;
         get2dRegion(depth_img, mask, v_intrinsic, v_tlw, src_cam, dst_cam, region);
 
-        std::cout << rgb_files[i-1] << "\t" << rgb_files[i] << "\t" << depth_files[i-1] << "\t"  \
+        LOG(INFO) << rgb_files[i-1] << "\t" << rgb_files[i] << "\t" << depth_files[i-1] << "\t"  \
             << depth_files[i] << "\t" << FLAGS_extrinsic_fp << "\t" << FLAGS_intrinsic_fp << "\t"  \
-            << src_cam << "\t" << dst_cam << "\t" << sum << "\t";
+            << src_cam << "\t" << dst_cam;
+
+        std::cout << std::endl;
+        std::cout << "sum:\t" << sum << '\t';
         for(int i=0; i< region.size(); i++){
             cv::circle(rgb_img, region[i], 2, cv::Scalar(0,0,255) );
             std::cout << region[i].x << "," << region[i].y<<':';

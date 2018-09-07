@@ -63,23 +63,13 @@ def run1():
     """Data collection pipeline."""
     from align_all_sensor import reconstruct_calib_data
     from align_all_sensor import PerLineLabler
-    labeler = PerLineLabler()
+    import get_cam
+    base_dir = 'data/batch4'
+    calib = Calibrator(base_dir, resize_xeye=True)
+    labeler = MultiCamGrabLabeler(base_dir, resize_xeye=True)
 
-    tm_file = __file__
-    src_dirs = ['./data/camera-4068',
-                './data/camera-4069',
-                './data/camera-4070',
-                './data/camera-4071',
-                './data/depth_cam1/color',
-                './data/depth_cam2/color',
-                './data/depth_cam1/depth',
-                './data/depth_cam2/depth'
-                ]
-    align_offsets = [0, 0, 0, 0, 0, 0, 0, 0]
-    base_dir = './data/batch3'
-    calib_data_dir = os.path.join(base_dir, 'calib_data')
-    test_data_dir = os.path.join(base_dir, 'test_data')
-    parameter_dir = os.path.join(base_dir, 'parameters')
+
+
 
     if len(sys.argv) == 1:
         filename = 'test_gen_tm.txt'
@@ -100,7 +90,13 @@ def run1():
                 line = '\t'.join(items)
                 print line
                 print >> fout, line
-                labeler.run(line)
+                file_dict = get_cam()
+     
+                if prefix == 'calib':
+                    calib.add_files(file_dict)
+                else:
+                    labeler.add_files(file_dict)
+                    labeler.gen_label()
                 items = []
             elif inp == 'calib':
                 items = []
@@ -110,9 +106,7 @@ def run1():
                 print >> fout, line
             elif inp == 'event':
                 if prefix == 'calib':
-                    reconstruct_calib_data(tm_file, src_dirs, align_offsets, calib_data_dir)
-                    cmd = 'sh calibrate.sh {}'.format(base_dir)
-                    [status, output] = commands.getstatusoutput(cmd)
+                    [status, output] = calib.gen_calib_parameters()
                     print status
                     print output
                     assert status == 0
@@ -128,3 +122,7 @@ def run1():
             else:
                 print 'Program end'
                 sys.exit(0)
+
+
+if __name__ == '__main__':
+    run1()

@@ -60,13 +60,13 @@ def test_get_region_sequence():
 
 
 def infer(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,
-          rgb_file_seqs, depth_file_seqs):
+          rgb_file_seqs, depth_file_seqs, save_dir='./', show_each_step=True):
     """Unit test."""
     for i in rgb_cam_id_list:
         depth_res_seqs = {}
-        for depth_cam_id in depth_cam_id_list:
+        for j, depth_cam_id in enumerate(depth_cam_id_list):
             rgb_seq = rgb_file_seqs[i]
-            depth_seq = depth_file_seqs[i]
+            depth_seq = depth_file_seqs[j]
             res_seq = get_region_sequence(intrinsic_path, extrinsic_path,
                                           rgb_seq, depth_seq,
                                           i, depth_cam_id)
@@ -76,7 +76,9 @@ def infer(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,
             display_region_sequence(depth_res_seqs[k],
                                     suffix='_%d_%s' % (i, str(k)),
                                     rot_rect=True,
-                                    draw_on_last=True)
+                                    draw_on_last=True,
+                                    save_dir=save_dir,
+                                    show_each_step=show_each_step)
 
 
 def test():
