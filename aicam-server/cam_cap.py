@@ -8,12 +8,12 @@ import urllib
 import operator
 
 t_date=(datetime.datetime.now().strftime('%Y%m%d'))
-root_path="/home/xteam/wangxiao05/rs_assist_dc/aicam_server"
+root_path="aicam_server"
 f_path="%s/data/newsale/data/%s" % (root_path,t_date)
 cam_path="%s/cam_data/newsale/data/%s" % (root_path,t_date)
 #deep_path="/home/xteam/space/camdeep"
-deep_path="/home/xteam/wangxiao05/rs_assist_dc"
-deep_path_bak="/home/xteam/space/camdeep/camdeep_bak/%s" % (t_date)
+deep_path='tmp'
+deep_path_bak="tmp/bak/%s" % (t_date)
 avg_tim=0
 
 path_cam1_color=deep_path+"/depth_cam1/color/"
