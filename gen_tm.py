@@ -21,7 +21,7 @@ from aicam_server.cam_cap import get_image
 
 def run():
     """Generate label and timestamp."""
-    if len(sys.argv) == 1:
+    if 1 or len(sys.argv) == 1:
         filename = 'test_gen_tm.txt'
     else:
         filename = sys.argv[1]
@@ -66,7 +66,7 @@ def run1():
     from align_all_sensor import reconstruct_calib_data
     from align_all_sensor import Calibrator
     from align_all_sensor import MultiCamGrabLabeler
-    base_dir = 'data/batch4'
+    base_dir = sys.argv[1]
     calib = Calibrator(base_dir, resize_xeye=True)
     labeler = MultiCamGrabLabeler(base_dir, resize_xeye=True)
     # throw garbage image
@@ -78,7 +78,7 @@ def run1():
 
 
 
-    if len(sys.argv) == 1:
+    if 1 or len(sys.argv) == 1:
         filename = 'test_gen_tm.txt'
     else:
         filename = sys.argv[1]
@@ -117,6 +117,7 @@ def run1():
                 print >> fout, line
             elif inp == 'event':
                 if prefix == 'calib':
+                    calib.cp_files()
                     [status, output] = calib.gen_calib_parameters()
                     print status
                     print output

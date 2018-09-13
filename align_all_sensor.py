@@ -12,6 +12,7 @@ Date:    2018/08/21 15:49:10
 """
 import glob
 import os
+import sys
 import shutil
 import numpy as np
 import logging
@@ -136,6 +137,7 @@ class Calibrator(object):
         self.src_keys = None
         self.counter = 1
         self.resize_xeye = resize_xeye
+        self.record_path = os.path.join(dst_dir, 'calib_data.txt')
 
     def add_files(self, file_dict):
         """Parse files to add."""
@@ -146,31 +148,51 @@ class Calibrator(object):
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
             logger.info('Init Calibrator done.')
         for k, v in file_dict.iteritems():
-            filename = str(10000000 + self.counter)[1:] + '.jpg'
+            print 'k,v', k, v
+            filename = str(10000000 + self.counter)[1:]
             if k.startswith('cam'):
                 if 'dept' in k:
                     continue
                 cam_id = self.src_keys_dict[k]
-                dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename)
+                dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename + '.' + v.split('.')[-1]) 
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
                 print 'calib data copy', v, dst_path
-                shutil.copy(v, dst_path)
+                print >> sys.stderr, 'calib data copy', v, dst_path
+                with open(self.record_path, 'ab') as fout:
+                     fout.write('cp ' + v + ' ' + dst_path + '\n')
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):
                     cam_id = self.src_keys_dict[('xeye_image', i)]
-                    dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename)
+                    dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename + '.' + imgpath.split('.')[-1])
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
                     if self.resize_xeye:
-                        resize_xeye_image_file(imgpath, dst_path)
+                         
+                        with open(self.record_path, 'ab') as fout:
+                             fout.write('resize ' + imgpath + ' ' + dst_path + '\n')
+                        # resize_xeye_image_file(imgpath, dst_path)
                     else:
-                        shutil.copy(imgpath, dst_path)
+                        with open(self.record_path, 'ab') as fout:
+                             fout.write('cp' + imgpath + ' ' + dst_path + '\n')
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
 
         self.counter += 1
+
+    def cp_files(self):
+        from xeye_calib import resize_xeye_image_file
+        f = open(self.record_path)
+        for line in f:
+            op, src_path, dst_path = line.strip().split()
+            dir_path = os.path.dirname(dst_path)
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            if op == 'resize':
+                resize_xeye_image_file(src_path, dst_path)  
+            elif op == 'cp':
+                shutil.copy(src_path, dst_path)
 
     def gen_calib_parameters(self):
         logger.debug('dst_dir: {}'.format(self.dst_dir))
