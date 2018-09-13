@@ -1,3 +1,7 @@
+if [ -d librealsense ]; then
+  echo librealsense already exists.
+  exit 0
+fi
 if [ $# -ne 1 ]; then
    # echo  "Usage sh $0 PYTHON_EXECUTABLE_PATH" && exit 1
    PYTHON_EXECUTABLE_PATH=`which python`
@@ -14,7 +18,9 @@ sudo apt-get install -y libusb-1.0.0-dev
 sudo apt-get install -y libglfw3-dev
 sudo apt-get install -y libgl1-mesa-dev
 sudo apt-get install -y libglu1-mesa-dev
-#git clone https://github.com/IntelRealSense/librealsense.git
+if [ ! -e librealsense ]; then
+  git clone https://github.com/IntelRealSense/librealsense.git
+fi
 cd librealsense
 rm -rf build && mkdir -p build
 cd build
