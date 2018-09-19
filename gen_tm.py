@@ -76,8 +76,6 @@ def run1():
     print 'throw away:', throw_away
 
 
-
-
     if 1 or len(sys.argv) == 1:
         filename = 'test_gen_tm.txt'
     else:

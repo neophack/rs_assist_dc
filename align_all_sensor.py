@@ -142,7 +142,6 @@ class Calibrator(object):
     def add_files(self, file_dict):
         """Parse files to add."""
         from xeye_calib import resize_xeye_image_file
-
         if self.src_keys is None:
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
@@ -154,27 +153,29 @@ class Calibrator(object):
                 if 'dept' in k:
                     continue
                 cam_id = self.src_keys_dict[k]
-                dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename + '.' + v.split('.')[-1]) 
+                dst_path = os.path.join(self.calib_data_dir, str(
+                    cam_id), 'cam0', filename + '.' + v.split('.')[-1])
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
                 print 'calib data copy', v, dst_path
                 print >> sys.stderr, 'calib data copy', v, dst_path
                 with open(self.record_path, 'ab') as fout:
-                     fout.write('cp ' + v + ' ' + dst_path + '\n')
+                    fout.write('cp ' + v + ' ' + dst_path + '\n')
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):
                     cam_id = self.src_keys_dict[('xeye_image', i)]
-                    dst_path = os.path.join(self.calib_data_dir, str(cam_id), 'cam0', filename + '.' + imgpath.split('.')[-1])
+                    dst_path = os.path.join(self.calib_data_dir, str(
+                        cam_id), 'cam0', filename + '.' + imgpath.split('.')[-1])
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
                     if self.resize_xeye:
-                         
+
                         with open(self.record_path, 'ab') as fout:
-                             fout.write('resize ' + imgpath + ' ' + dst_path + '\n')
+                            fout.write('resize ' + imgpath + ' ' + dst_path + '\n')
                         # resize_xeye_image_file(imgpath, dst_path)
                     else:
                         with open(self.record_path, 'ab') as fout:
-                             fout.write('cp' + imgpath + ' ' + dst_path + '\n')
+                            fout.write('cp' + imgpath + ' ' + dst_path + '\n')
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
@@ -190,7 +191,7 @@ class Calibrator(object):
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             if op == 'resize':
-                resize_xeye_image_file(src_path, dst_path)  
+                resize_xeye_image_file(src_path, dst_path)
             elif op == 'cp':
                 shutil.copy(src_path, dst_path)
 
@@ -206,18 +207,30 @@ class Calibrator(object):
 class MultiCamGrabLabeler(object):
     """One line, one label."""
 
-    def __init__(self, dst_dir, resize_xeye):
+    def __init__(self, base_dir, resize_xeye=True):
         pass
-        self.dst_dir = dst_dir
-        self.param_dir = os.path.join(dst_dir, 'parameters')
-        self.test_data_dir = os.path.join(dst_dir, 'test_data')
+        self.base_dir = base_dir
+        self.param_dir = os.path.join(base_dir, 'parameters')
+        self.test_data_dir = os.path.join(base_dir, 'test_data')
         self.intrinsic_path = os.path.join(self.param_dir, 'leftIntrinsic.txt')
         self.extrinsic_path = os.path.join(self.param_dir, 'transsWorldToCam.txt')
-        self.result_dir = os.path.join(dst_dir, 'result')
+        self.result_dir = os.path.join(base_dir, 'result')
         self.src_keys = None
-        self.counter = 1
+        self.counter = 0
         self.labels = []
         self.resize_xeye = resize_xeye
+
+    def init_from_test_data(self, test_data_dir_name):
+        """Init from test data after calibration."""
+        assert(os.path.exists(self.intrinsic_path))
+        self.test_data_dir = os.path.join(self.base_dir, test_data_dir_name)
+        rgb_num = int(open(self.intrinsic_path).readline().rstrip())
+        total_cam_num = len(glob.glob(os.path.join(self.test_data_dir, '*')))
+        depth_cam_num = total_cam_num - rgb_num
+        self.rgb_cam_list = range(rgb_num)
+        self.rgb_of_depth_cam_list = range(rgb_num - depth_cam_num, rgb_num)
+        self.counter = len(glob.glob(os.path.join(self.test_data_dir, '0', '*.jpg')))
+        return self
 
     def add_files(self, file_dict):
         from xeye_calib import resize_xeye_image_file
@@ -250,18 +263,20 @@ class MultiCamGrabLabeler(object):
                 return
         self.counter += 1
 
-    def gen_label(self):
+    def gen_label(self, counter=None):
         import infer_sequence
-        if self.counter > 2:
+        if counter is None:
+            counter = self.counter
+        if counter > 1:
             rgb_file_seqs = []
             depth_file_seqs = []
 
             for i, cam_id in enumerate(self.rgb_cam_list):
                 if len(rgb_file_seqs) <= i:
                     rgb_file_seqs.append([])
-                filename = str(10000000 + self.counter - 2)[1:] + '.jpg'
+                filename = str(10000000 + counter - 2)[1:] + '.jpg'
                 rgb_file_seqs[i].append(os.path.join(self.test_data_dir, str(cam_id), filename))
-                filename = str(10000000 + self.counter - 1)[1:] + '.jpg'
+                filename = str(10000000 + counter - 1)[1:] + '.jpg'
                 rgb_file_seqs[i].append(os.path.join(self.test_data_dir, str(cam_id), filename))
 
             for i, cam_id in enumerate(self.rgb_of_depth_cam_list):
@@ -269,105 +284,17 @@ class MultiCamGrabLabeler(object):
                 print 'i, cam_id', i, cam_id
                 if len(depth_file_seqs) <= i:
                     depth_file_seqs.append([])
-                filename = str(10000000 + self.counter - 2)[1:] + '.jpg'
-                depth_file_seqs[i].append(os.path.join(self.test_data_dir, str(depth_cam_id), filename))
-                filename = str(10000000 + self.counter - 1)[1:] + '.jpg'
-                depth_file_seqs[i].append(os.path.join(self.test_data_dir, str(depth_cam_id), filename))
+                filename = str(10000000 + counter - 2)[1:] + '.jpg'
+                depth_file_seqs[i].append(os.path.join(
+                    self.test_data_dir, str(depth_cam_id), filename))
+                filename = str(10000000 + counter - 1)[1:] + '.jpg'
+                depth_file_seqs[i].append(os.path.join(
+                    self.test_data_dir, str(depth_cam_id), filename))
 
             return infer_sequence.infer(self.intrinsic_path, self.extrinsic_path,
                                         self.rgb_cam_list, self.rgb_of_depth_cam_list,
                                         rgb_file_seqs, depth_file_seqs, save_dir=self.result_dir,
                                         show_each_step=True)
-
-
-class PerLineLabler(object):
-    """One line, one label."""
-
-    def __init__(self, dst_dir):
-        pass
-        self.src_dirs = None
-        self.default_init()
-
-    def default_init(self):
-        self.src_dirs = ['./data/camera-4068',
-                         './data/camera-4069',
-                         './data/camera-4070',
-                         './data/camera-4071',
-                         './data/depth_cam1/color',
-                         './data/depth_cam2/color',
-                         './data/depth_cam1/depth',
-                         './data/depth_cam2/depth'
-                         ]
-        self.depth_cam_num = 2
-        self.rgb_cam_list = [x for x in range(len(self.src_dirs) - self.depth_cam_num)]
-        self.depth_cam_list = [x for x in range(len(self.rgb_cam_list) - self.depth_cam_num, len(self.src_dirs))]
-        self.align_offsets = [0] * len(self.src_dirs)
-        self.aligned_sequence = []
-        self.intrinsic_path = 'data/batch2/parameters/leftIntrinsic.txt'
-        self.extrinsic_path = 'data/batch2/parameters/transsWorldToCam.txt'
-        return self
-
-    def init_by_file_dict(self, file_dict):
-        """Init by file_dict.
-        {'cam1_color_file': '/hohohoh/hohoh/1.png',,
-         'cam1_dept_file': '/hohohoh/haha2222/1.png',
-         'cam2_color_file': '/hohohoh/hohoh1/1.png',,
-         'cam2_dept_file': '/hohohoh/haha222211/1.png',
-         'xeye_image': ['/hmejjjfsdf/1.jpg', '/hohwoehfwe/jfdsf/2.jpg']
-         }
-        """
-        self.depth_cam_num = 0
-        self.rgb_cam_num = 0
-        for k in file_dict:
-            if k.endswith('dept_file'):
-                self.depth_cam_num += 1
-        rgb_dirs = sorted([os.path.dirname(k) for k in file_dict['xeye_image']])
-        self.src_dirs = rgb_dirs[:]
-        for k in range(self.depth_cam_num):
-            self.src_dirs.append(os.path.dirname(file_dict['cam{}_color_file']))
-        self.rgb_cam_list = [x for x in range(len(self.src_dirs))]
-        self.rgb_cam_num = len(self.rgb_cam_list)
-        for k in range(self.depth_cam_num):
-            self.src_dirs.append(os.path.dirname(file_dict['cam{}_dept_file']))
-        self.depth_cam_list = [x for x in range(self.rgb_cam_num, len(self.src_dirs))]
-        self.align_offsets = [0] * len(self.src_dirs)
-        self.aligned_sequence = []
-
-    def run(self, line):
-        import infer_sequence
-        items = line.rstrip().split()
-        prefix = items[0]
-        assert prefix == 'event'
-        timestamp = int(items[1])
-
-        aligned_files = align(timestamp, prefix, self.src_dirs, self.align_offsets)
-        self.aligned_sequence.append(aligned_files)
-        if self.aligned_sequence >= 2:
-            rgb_file_seqs = []
-            for i in self.rgb_cam_list:
-                src_dir = self.src_dirs[i]
-                file_seq = []
-                for seq in self.aligned_sequence[-2:]:
-
-                    for tm in seq[src_dir]:
-                        file_seq.append(os.path.join(src_dir, tm + '.jpg'))
-                assert len(file_seq) == 2, len(file_seq)
-                rgb_file_seqs.append(file_seq)
-
-            depth_file_seqs = []
-            for i in self.depth_cam_list:
-                src_dir = self.src_dirs[i]
-                file_seq = []
-                for seq in self.aligned_sequence[-2:]:
-
-                    for tm in seq[src_dir]:
-                        file_seq.append(os.path.join(src_dir, tm + '.jpg'))
-                assert len(file_seq) == 2, len(file_seq)
-                depth_file_seqs.append(file_seq)
-
-            return infer_sequence.infer(self.intrinsic_path, self.extrinsic_path,
-                                        self.rgb_cam_list, self.depth_cam_list,
-                                        rgb_file_seqs, depth_file_seqs)
 
 
 def test_calib():
@@ -391,7 +318,6 @@ def test_calib():
     print output
 
 
-
 def test_calibrator():
     """Generate simulate data_collection data and run calibrator."""
     base_dir = 'data/batch2/calib_data'
@@ -410,7 +336,7 @@ def test_calibrator():
                     }
         calib.add_files(cam_data)
     calib.gen_calib_parameters()
-    
+
 
 def test_multicamgrablabeler():
     """Generate simulate data_collection data and run calibrator."""
@@ -432,6 +358,15 @@ def test_multicamgrablabeler():
         labeler.gen_label()
 
 
+def rerun_multicamgrablabeler():
+    """Generate simulate data_collection data and run calibrator."""
+    base_dir = 'data/batch4'
+    test_dir = 'test_data'
+    labeler = MultiCamGrabLabeler(base_dir).init_from_test_data(test_dir)
+
+    labeler.gen_label(counter=2)
+
+
 def test_event():
     tm_file = './data/test_gen_tm.txt'
     src_dirs = ['./data/camera-4068',
@@ -449,6 +384,7 @@ def test_event():
 
 
 if __name__ == '__main__':
+    rerun_multicamgrablabeler()
     # print test_calibrator()
-    print test_multicamgrablabeler()
+    # print test_multicamgrablabeler()
     # print test_event()
