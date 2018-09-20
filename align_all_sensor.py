@@ -141,7 +141,6 @@ class Calibrator(object):
 
     def add_files(self, file_dict):
         """Parse files to add."""
-        from xeye_calib import resize_xeye_image_file
         if self.src_keys is None:
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
@@ -169,7 +168,6 @@ class Calibrator(object):
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
                     if self.resize_xeye:
-
                         with open(self.record_path, 'ab') as fout:
                             fout.write('resize ' + imgpath + ' ' + dst_path + '\n')
                         # resize_xeye_image_file(imgpath, dst_path)
@@ -179,7 +177,6 @@ class Calibrator(object):
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
-
         self.counter += 1
 
     def cp_files(self):
@@ -291,10 +288,10 @@ class MultiCamGrabLabeler(object):
                 depth_file_seqs[i].append(os.path.join(
                     self.test_data_dir, str(depth_cam_id), filename))
 
-            return infer_sequence.infer(self.intrinsic_path, self.extrinsic_path,
+            return infer_sequence.infer_parallel(self.intrinsic_path, self.extrinsic_path,
                                         self.rgb_cam_list, self.rgb_of_depth_cam_list,
                                         rgb_file_seqs, depth_file_seqs, save_dir=self.result_dir,
-                                        show_each_step=True)
+                                        show_each_step=False)
 
 
 def test_calib():
@@ -340,6 +337,7 @@ def test_calibrator():
 
 def test_multicamgrablabeler():
     """Generate simulate data_collection data and run calibrator."""
+    import infer_sequence
     base_dir = 'data/batch2/test_data'
     labeler = MultiCamGrabLabeler('data/batch3')
     for i in range(0, 13):
@@ -355,17 +353,22 @@ def test_multicamgrablabeler():
                                    ]
                     }
         labeler.add_files(cam_data)
-        labeler.gen_label()
+        images = labeler.gen_label()
+        if images is None:
+            continue
+        infer_sequence.show_multi_images(images)
 
 
 def rerun_multicamgrablabeler():
     """Generate simulate data_collection data and run calibrator."""
+    import infer_sequence
     base_dir = 'data/batch4'
     test_dir = 'test_data'
     labeler = MultiCamGrabLabeler(base_dir).init_from_test_data(test_dir)
 
-    labeler.gen_label(counter=2)
-
+    images = labeler.gen_label(counter=2)
+    print len(images)
+    infer_sequence.show_multi_images(images)
 
 def test_event():
     tm_file = './data/test_gen_tm.txt'
@@ -384,7 +387,7 @@ def test_event():
 
 
 if __name__ == '__main__':
-    rerun_multicamgrablabeler()
+    # rerun_multicamgrablabeler()
     # print test_calibrator()
-    # print test_multicamgrablabeler()
+    print test_multicamgrablabeler()
     # print test_event()

@@ -82,7 +82,7 @@ def infer_object(region_info):
     mask[ys, xs] = 255
     image, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     csizes = [c.size for c in contours]
-    print 'csizes:', csizes
+    # print 'csizes:', csizes
     if not csizes:
         res = dict(rgb0=rgb0,
                    rgb1=rgb1,
@@ -215,25 +215,26 @@ def make_display_image(res_info, rot_rect, background_img=None):
         # draw rot rect
         r = res_info['rot_rect']
         box_pts = np.int16(cv2.boxPoints(r))
-        color = tuple(random.sample(range(0, 255), 3))
-        # color = (0, 255, 0)
+        # color = tuple(random.sample(range(0, 255), 3))
+        color = (0, 255, 0)
         for i in range(1, 4):
-            cv2.line(img_show, tuple(box_pts[i]), tuple(box_pts[i-1]), color)
-        cv2.line(img_show, tuple(box_pts[3]), tuple(box_pts[0]), color)
+            cv2.line(img_show, tuple(box_pts[i]), tuple(box_pts[i - 1]), color, 5)
+        cv2.line(img_show, tuple(box_pts[3]), tuple(box_pts[0]), color, 5)
         # cv2.drawContours(img_show, [box_pts], -1, (0, 255, 0), 4)
     else:
         # draw rect
         r = res_info['rect']
-        color = tuple(random.sample(range(0, 255), 3))
+        # color = tuple(random.sample(range(0, 255), 3))
+        color = (0, 255, 0)
         img_show = cv2.rectangle(img_show, tuple(r[0: 2]), tuple(
-            [r[0] + r[2], r[1] + r[3]]), color, 3)
+            [r[0] + r[2], r[1] + r[3]]), color, 5)
         # img_show = cv2.rectangle(img_show, tuple(r[0: 2]), tuple(
         #     [r[0] + r[2], r[1] + r[3]]), (0, 0, 255), 3)
 
     return img_show
 
 
-def display_region_sequence(res_seq, suffix='', save_dir='./', rot_rect=False, draw_on_last=False,
+def display_region_sequence(res_seq, suffix='', save_dir=None, rot_rect=False, draw_on_last=False,
                             show_each_step=True):
     import cv2
     count = 0
@@ -244,27 +245,23 @@ def display_region_sequence(res_seq, suffix='', save_dir='./', rot_rect=False, d
             display_image = cv2.imread(background_info['rgb0'])
         else:
             display_image = cv2.imread(background_info['rgb1'])
+    display_images = []
     for res in res_seq:
-        # img0 = cv2.imread(rgb0_path)
-        # img1 = cv2.imread(rgb1_path)
-        # if region_diff < 0:
-        #     img = img1
-        # else:
-        #     img = img0
-        # print 'region', region
-        # display_image = make_alpha_blend(img, region, 0.5, [255, 0, 0])
         if draw_on_last:
             display_image = make_display_image(res, rot_rect, display_image)
         else:
             display_image = make_display_image(res, rot_rect, None)
+        display_images.append(display_image)
         name = str(1000000 + count)[1:]
-        filepath = os.path.join(save_dir, '%s%s.jpg' % (name, suffix))
+        if save_dir is not None:
+            filepath = os.path.join(save_dir, '%s%s.jpg' % (name, suffix))
+            cv2.imwrite(filepath, display_image)
         if show_each_step:
             print 'show result'
             cv2.imshow('Show result', display_image)
             cv2.waitKey(0)
-        cv2.imwrite(filepath, display_image)
         count += 1
+    return display_images
 
 
 def test_get_region_sequence():

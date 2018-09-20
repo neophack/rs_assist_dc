@@ -60,7 +60,6 @@ def run():
                 sys.exit(0)
 
 
-
 def run1():
     """Data collection pipeline."""
     from align_all_sensor import reconstruct_calib_data
@@ -74,7 +73,6 @@ def run1():
     print 'throw away:', throw_away
     throw_away = get_image()
     print 'throw away:', throw_away
-
 
     if 1 or len(sys.argv) == 1:
         filename = 'test_gen_tm.txt'
@@ -97,7 +95,6 @@ def run1():
                 print >> fout, line
                 file_dict = get_image()
                 # print 'file_dict', json.dumps(file_dict, indent=2)
-     
                 if prefix == 'calib':
                     print 'file_dict', json.dumps(file_dict, indent=2)
                     calib.add_files(file_dict)
