@@ -25,7 +25,6 @@ from pipeline import get_obj_region
 from pipeline import merge_multi_res_seqs
 
 
-
 def test_get_region_sequence():
     """Unit test."""
     intrinsic_path = "data/batch2/parameters/leftIntrinsic.txt"
@@ -55,10 +54,11 @@ def test_get_region_sequence():
                                     suffix='_%d_%s' % (i, str(k)),
                                     rot_rect=True,
                                     draw_on_last=True)
-            # print 'infer:', infer
 
 
 def show_multi_images(display_images, resize_ratio=0.5, cols=2):
+    if not display_images:
+        return None
     s = len(display_images)
     if s % cols != 0:
         target_length = s + (cols - s % cols)
@@ -70,7 +70,7 @@ def show_multi_images(display_images, resize_ratio=0.5, cols=2):
     dst_h = int(h * resize_ratio)
     dst_w = int(w * resize_ratio)
 
-    for i in range(target_length):  
+    for i in range(target_length):
         if i != 0 and i % cols == 0:
             col_images.append(np.hstack(row_images))
             row_images = []
@@ -86,13 +86,58 @@ def show_multi_images(display_images, resize_ratio=0.5, cols=2):
     cv2.imshow('test', img)
     cv2.waitKey(0)
 
+
 def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,
-          rgb_file_seqs, depth_file_seqs, save_dir=None, show_each_step=True):
+                   rgb_file_seqs, depth_file_seqs, save_dir=None, show_each_step=True):
     """Unit test."""
     display_images = []
 
     def _infer(intrinsic_path, extrinsic_path, i, depth_cam_id_list, rgb_file_seqs,
                depth_file_seqs):
+        result_imgs = []
+        depth_res_seqs = {}
+        for j, depth_cam_id in enumerate(depth_cam_id_list):
+            rgb_seq = rgb_file_seqs[i]
+            depth_seq = depth_file_seqs[j]
+            res_seq = get_region_sequence(intrinsic_path, extrinsic_path,
+                                          rgb_seq, depth_seq,
+                                          i, depth_cam_id)
+            depth_res_seqs.setdefault(depth_cam_id, res_seq)
+        depth_res_seqs['combined'] = merge_multi_res_seqs(depth_res_seqs.values())
+
+        for k in depth_res_seqs:
+            if k != 'combined':
+                continue
+            images = display_region_sequence(depth_res_seqs[k],
+                                             suffix='_%d_%s' % (i, str(k)),
+                                             rot_rect=True,
+                                             draw_on_last=True,
+                                             save_dir=save_dir,
+                                             show_each_step=show_each_step)
+            result_imgs.extend(images)
+        return result_imgs
+
+    pool = ThreadPool(6)
+    args = []
+    for i in rgb_cam_id_list:
+        args.append([intrinsic_path, extrinsic_path, i, depth_cam_id_list, rgb_file_seqs,
+                     depth_file_seqs])
+    print 'args num', len(args)
+    results = pool.map(lambda x: _infer(*x), args)
+    pool.close()
+    pool.join()
+    display_images = []
+    for imgs in results:
+        print 'imgs in result:', len(imgs)
+        display_images.extend(imgs)
+    return display_images
+
+
+def infer(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,
+          rgb_file_seqs, depth_file_seqs, save_dir=None, show_each_step=True):
+    """Unit test."""
+    display_images = []
+    for i in rgb_cam_id_list:
         depth_res_seqs = {}
         for j, depth_cam_id in enumerate(depth_cam_id_list):
             rgb_seq = rgb_file_seqs[i]
@@ -113,49 +158,7 @@ def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id
                                              save_dir=save_dir,
                                              show_each_step=show_each_step)
             display_images.extend(images)
-        return display_images
-
-    pool = ThreadPool(6)
-    args = []
-    for i in rgb_cam_id_list:
-        args.append([intrinsic_path, extrinsic_path, i, depth_cam_id_list, rgb_file_seqs,
-                     depth_file_seqs])
-    results = pool.map(lambda args: _infer(*args), args)
-    pool.close()
-    pool.join()
-    display_images = []
-    for imgs in results:
-        display_images.extend(imgs)
     return display_images
-
-
-def infer(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,
-          rgb_file_seqs, depth_file_seqs, save_dir=None, show_each_step=True):
-    """Unit test."""
-    display_images = []
-    for i in rgb_cam_id_list:
-        depth_res_seqs = {}
-        for j, depth_cam_id in enumerate(depth_cam_id_list):
-            rgb_seq = rgb_file_seqs[i]
-            depth_seq = depth_file_seqs[j]
-            res_seq = get_region_sequence(intrinsic_path, extrinsic_path,
-                                          rgb_seq, depth_seq,
-                                          i, depth_cam_id)
-            depth_res_seqs.setdefault(depth_cam_id, res_seq)
-        depth_res_seqs['combined'] = merge_multi_res_seqs(depth_res_seqs.values())
-        
-        for k in depth_res_seqs:
-            if k != 'combined':
-                continue
-            images = display_region_sequence(depth_res_seqs[k],
-                                    suffix='_%d_%s' % (i, str(k)),
-                                    rot_rect=True,
-                                    draw_on_last=True,
-                                    save_dir=save_dir,
-                                    show_each_step=show_each_step)
-            display_images.extend(images)
-    return display_images
-
 
 
 def test():

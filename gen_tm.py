@@ -102,7 +102,8 @@ def run1():
                     print 'add file_dict to labeler'
                     print 'file_dict', json.dumps(file_dict, indent=2)
                     labeler.add_files(file_dict)
-                    labeler.gen_label()
+                    images = labeler.gen_label()
+                    labeler.show_images(images)
                 items = []
             elif inp == 'calib':
                 items = []

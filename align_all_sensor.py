@@ -20,8 +20,9 @@ import commands
 
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+
 if not logger.handlers:
+    logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
 
 
@@ -48,12 +49,6 @@ def align(tm_data, prefix, src_dirs, align_offsets):
         start_ind = 0
 
         assert start_ind >= 0
-        # print d
-        # print 'inds:', inds[start_ind:]
-        # print 'tms:', tms[inds[start_ind:]]
-        # print 'tms - 1:', tms[inds[start_ind:] - 1]
-        # print 'tm_list:', tm_list[start_ind:]
-        # print np.array(tms[inds[start_ind:]]) - np.array(tm_list[start_ind:])
         assert np.all((abs(tms[inds[start_ind:]] - tm_list[start_ind:])) < 250)
         aligned_files.append((d, tms[inds[start_ind:]]))
     return aligned_files
@@ -289,9 +284,15 @@ class MultiCamGrabLabeler(object):
                     self.test_data_dir, str(depth_cam_id), filename))
 
             return infer_sequence.infer_parallel(self.intrinsic_path, self.extrinsic_path,
-                                        self.rgb_cam_list, self.rgb_of_depth_cam_list,
-                                        rgb_file_seqs, depth_file_seqs, save_dir=self.result_dir,
-                                        show_each_step=False)
+                                                 self.rgb_cam_list, self.rgb_of_depth_cam_list,
+                                                 rgb_file_seqs, depth_file_seqs,
+                                                 save_dir=self.result_dir,
+                                                 show_each_step=False)
+
+        def show_images(self, images, resize_ratio=0.5, cols=2):
+            import infer_sequence
+            logger.info('show image. image size: {}'.format(len(images)))
+            return infer_sequence.show_multi_images(images, resize_ratio, cols)
 
 
 def test_calib():
@@ -356,7 +357,7 @@ def test_multicamgrablabeler():
         images = labeler.gen_label()
         if images is None:
             continue
-        infer_sequence.show_multi_images(images)
+        infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=4)
 
 
 def rerun_multicamgrablabeler():
@@ -367,8 +368,9 @@ def rerun_multicamgrablabeler():
     labeler = MultiCamGrabLabeler(base_dir).init_from_test_data(test_dir)
 
     images = labeler.gen_label(counter=2)
-    print len(images)
-    infer_sequence.show_multi_images(images)
+    print 'images lengh', len(images)
+    infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=4)
+
 
 def test_event():
     tm_file = './data/test_gen_tm.txt'
@@ -387,7 +389,7 @@ def test_event():
 
 
 if __name__ == '__main__':
-    # rerun_multicamgrablabeler()
+    rerun_multicamgrablabeler()
     # print test_calibrator()
-    print test_multicamgrablabeler()
+    # print test_multicamgrablabeler()
     # print test_event()
