@@ -106,7 +106,8 @@ def cap_xeye():
     sum_tim = 0
     t_start = (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     img_list = []
-    os.system("cd /home/xteam/newsale/xeye;/bin/bash runxeyecmd.sh startcap;sleep 0.3")
+    #os.system("cd /home/xteam/newsale/xeye;/bin/bash runxeyecmd.sh startcap;sleep 0.3")
+    os.system("cd xeye_client ;sh start.sh;sleep 0.3")
     i = 0
     print('f_path', f_path)
     for root, dirs, files in os.walk(f_path):
@@ -153,9 +154,10 @@ def cap_xeye():
 def get_image():
     # avg_tim=1535631396551  #1535631396561
     img_list = {}
+    deep_img_dict = {}
     img_list, avg_tim = cap_xeye()
     # deep_img_dict = cap_deep(avg_tim)
-    deep_img_dict = cap_remote_deep()
+    # deep_img_dict = cap_remote_deep()
     deep_img_dict['xeye_image'] = img_list
     return deep_img_dict
 
