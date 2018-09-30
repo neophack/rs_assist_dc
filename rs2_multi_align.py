@@ -110,16 +110,28 @@ try:
         color_image_2 = np.asanyarray(color_frame_2.get_data())
         # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
         depth_path_1 = os.path.join(cam_dir_1, 'depth', '%s.png' % tm)
+        depth_flag_1 = os.path.join(cam_dir_1, 'depth', '%s.flag' % tm)
         color_path_1 = os.path.join(cam_dir_1, 'color', '%s.png' % tm)
+        color_flag_1 = os.path.join(cam_dir_1, 'color', '%s.flag' % tm)
         depth_path_2 = os.path.join(cam_dir_2, 'depth', '%s.png' % tm)
+        depth_flag_2 = os.path.join(cam_dir_2, 'depth', '%s.flag' % tm)
         color_path_2 = os.path.join(cam_dir_2, 'color', '%s.png' % tm)
+        color_flag_2 = os.path.join(cam_dir_2, 'color', '%s.flag' % tm)
 
         with open(depth_path_1, 'wb') as fout:
             fout.write(depth_image_1.astype(np.uint16).tobytes())
         cv2.imwrite(color_path_1, color_image_1)
+        with open(depth_flag_1, 'wb') as fout:
+            pass
+        with open(color_flag_1, 'wb') as fout:
+            pass
         with open(depth_path_2, 'wb') as fout:
             fout.write(depth_image_2.astype(np.uint16).tobytes())
         cv2.imwrite(color_path_2, color_image_2)
+        with open(depth_flag_2, 'wb') as fout:
+            pass
+        with open(color_flag_2, 'wb') as fout:
+            pass
         time.sleep(0.1)
 
 finally:

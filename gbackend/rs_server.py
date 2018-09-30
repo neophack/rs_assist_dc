@@ -22,11 +22,12 @@ def get_deep_file(src_path, color_image_dir):
     for root, dirs, files in os.walk(src_path):
         for f in files:
             # print f
-            if len(f) < 3:
+            if len(f) < 3 or f.startswith('.'):
                 continue
-            if not f.endswith('jpg') and not f.endswith('png'):
+            
+            if not f.endswith('.flag'):
                 continue
-            print 'f:', f
+
             fn = long(f.split('.')[0])
             _abs = abs(fn - now_tim)
             if _abs < tim_inv:
@@ -34,26 +35,37 @@ def get_deep_file(src_path, color_image_dir):
                 if os.path.exists(src_pic):
                     os.remove(src_pic)
                     # print 'remove',src_pic
-                src_pic = os.path.realpath("%s/%s" % (root, f))
+                src_pic = os.path.realpath("%s/%s" % (root, str(fn) + '.png'))
                 # print src_pic,tim_inv
             else:
-                os.remove("%s/%s" % (root, f))
+                try:
+                    os.remove("%s/%s" % (root, str(fn) + '.flag'))
+                except:
+                    pass
+                try:
+                    os.remove("%s/%s" % (root, str(fn) + '.png'))
+                except:
+                    pass
     color_pic = ''
     if src_pic:
-        color_pic = os.path.join(color_image_dir, os.path.basename(src_path))
+        color_pic = os.path.realpath(os.path.join(color_image_dir, os.path.basename(src_pic)))
+
     return src_pic, color_pic
 
 
 class RealsenseImageProvider(object):
 
     def __init__(self, depth_dir='./'):
-        depth_dir = '/Users/wangxiao05/data/rs_assist_dc'
+        depth_dir = './tmp'
         self.depth_dir = depth_dir
 
     def run(self):
         d = {}
         fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam1/depth'),
                                            os.path.join(self.depth_dir, 'depth_cam1/color'))
+        import sys
+        print >> sys.stderr, fp_depth
+        print >> sys.stderr, fp_color
         d['cam1_dept_file'] = base64.b64encode(open(fp_depth).read())
         d['cam1_color_file'] = base64.b64encode(open(fp_color).read())
         fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam2/depth'),

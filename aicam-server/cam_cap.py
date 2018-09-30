@@ -6,6 +6,7 @@ import json
 import datetime
 import urllib
 import operator
+import base64
 
 t_date = (datetime.datetime.now().strftime('%Y%m%d'))
 root_path = "aicam_server"
@@ -88,7 +89,7 @@ def cap_deep(avg_tim):
 def cap_remote_deep():
     import requests
     target_ip = '127.0.0.1:8950'
-    target_ip = '172.24.24.253:8950'
+    # target_ip = '172.24.24.253:8950'
 
     resp = requests.get('http://{}/realsense_api/'.format(target_ip)).json()
     tm = str(int(time.time() * 1000))
@@ -96,6 +97,9 @@ def cap_remote_deep():
     for k, v in resp.iteritems():
         if len(v) > 100:
             dst_path = os.path.join('tmp', k + '_' + tm + '.jpg')
+            with open(dst_path, 'wb') as fout:
+                imgdata = base64.b64decode(v)
+                fout.write(imgdata)
         else:
             dst_path = ''
         d[k] = dst_path
@@ -157,7 +161,7 @@ def get_image():
     deep_img_dict = {}
     img_list, avg_tim = cap_xeye()
     # deep_img_dict = cap_deep(avg_tim)
-    # deep_img_dict = cap_remote_deep()
+    deep_img_dict = cap_remote_deep()
     deep_img_dict['xeye_image'] = img_list
     return deep_img_dict
 

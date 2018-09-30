@@ -154,8 +154,8 @@ def run2():
         get_image = get_collection_image
     else:
         base_dir = sys.argv[1]
-        aicam_server = importlib.import_module('aicam-server')
-        get_image = aicam_server.cam_cap.get_image
+        cam_cap = importlib.import_module('aicam-server.cam_cap')
+        get_image = cam_cap.get_image
         get_calib_image = get_image
         get_collection_image = get_image
 
