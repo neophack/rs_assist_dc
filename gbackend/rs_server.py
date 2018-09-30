@@ -15,7 +15,7 @@ import base64
 import time
 
 
-def get_deep_file(src_path):
+def get_deep_file(src_path, color_image_dir):
     tim_inv = 9999999999999
     now_tim = int(time.time() * 1000)
     src_pic = ""
@@ -38,7 +38,10 @@ def get_deep_file(src_path):
                 # print src_pic,tim_inv
             else:
                 os.remove("%s/%s" % (root, f))
-    return src_pic
+    color_pic = ''
+    if src_pic:
+        color_pic = os.path.join(color_image_dir, os.path.basename(src_path))
+    return src_pic, color_pic
 
 
 class RealsenseImageProvider(object):
@@ -49,12 +52,12 @@ class RealsenseImageProvider(object):
 
     def run(self):
         d = {}
-        fp = get_deep_file(os.path.join(self.depth_dir, 'depth_cam1/depth'))
-        d['cam1_depth_file'] = base64.b64encode(open(fp).read())
-        fp = get_deep_file(os.path.join(self.depth_dir, 'depth_cam1/color'))
-        d['cam1_color_file'] = base64.b64encode(open(fp).read())
-        fp = get_deep_file(os.path.join(self.depth_dir, 'depth_cam2/depth'))
-        d['cam2_depth_file'] = base64.b64encode(open(fp).read())
-        fp = get_deep_file(os.path.join(self.depth_dir, 'depth_cam2/color'))
-        d['cam2_color_file'] = base64.b64encode(open(fp).read())
+        fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam1/depth'),
+                                           os.path.join(self.depth_dir, 'depth_cam1/color'))
+        d['cam1_depth_file'] = base64.b64encode(open(fp_depth).read())
+        d['cam1_color_file'] = base64.b64encode(open(fp_color).read())
+        fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam2/depth'),
+                                           os.path.join(self.depth_dir, 'depth_cam2/color'))
+        d['cam2_depth_file'] = base64.b64encode(open(fp_depth).read())
+        d['cam2_color_file'] = base64.b64encode(open(fp_color).read())
         return d
