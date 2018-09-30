@@ -107,9 +107,9 @@ def cap_xeye():
     t_start = (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     img_list = []
     #os.system("cd /home/xteam/newsale/xeye;/bin/bash runxeyecmd.sh startcap;sleep 0.3")
-    os.system("cd xeye_client ;sh start.sh;sleep 0.3")
+    os.system("cd xeye_client ;sh start.sh >/dev/null;sleep 0.3")
     i = 0
-    print('f_path', f_path)
+    #print('f_path', f_path)
     for root, dirs, files in os.walk(f_path):
         for cam_dir in dirs:
             last_time = 0
@@ -119,7 +119,7 @@ def cap_xeye():
             # print 'root1', root
             for root1, dirs1, files1 in os.walk(root + "/" + cam_dir):
                 for f in files1:
-                    print root1, f
+                    #print root1, f
                     my_time = long(f.split('.')[0])
                     if last_time == 0 or last_time < my_time:
                         last_time = my_time

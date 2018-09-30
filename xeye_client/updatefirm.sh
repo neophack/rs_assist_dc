@@ -57,6 +57,7 @@ function run_cmd(){
         (
             echo_cmd xeye010OK
             echo_cmd "$cmd"  
+            echo_cmd "rtwaittime 200"  
             echo_cmd "exit"  
         ) | ./xeyeclient "${ip}"
         }
