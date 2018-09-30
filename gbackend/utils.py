@@ -15,17 +15,17 @@ import logging
 import logging.config
 
 
-def create_logger(filepath='config/logging.yml'):
+def create_logger(filepath='gbackend/config/logging.yml'):
     """Return logger defined by yml."""
-    logging.config.dictConfig(yaml.load(open('config/logging.yml')))
+    logging.config.dictConfig(yaml.load(open(filepath)))
     logger = logging.getLogger()
     return logger
 
 
-def create_multiprocessing_logger(filepath='config/logging.yml'):
+def create_multiprocessing_logger(filepath='gbackend/config/logging.yml'):
     """Return logger defined by yml."""
     import multiprocessing_logging
-    logging.config.dictConfig(yaml.load(open('config/logging.yml')))
+    logging.config.dictConfig(yaml.load(open(filepath)))
     logger = logging.getLogger()
     multiprocessing_logging.install_mp_handler()
     return logger

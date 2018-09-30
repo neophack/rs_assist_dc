@@ -265,14 +265,16 @@ class MultiCamGrabLabeler(object):
         self.counter = len(glob.glob(os.path.join(self.test_data_dir, '0', '*.jpg')))
         return self
 
-    def add_files(self, file_dict):
+    def add_files(self, file_dict, label=''):
         from xeye_calib import resize_xeye_image_file
         if self.src_keys is None:
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
             logger.info('Init Calibrator done.')
+        filename = str(10000000 + self.counter)[1:] + '.jpg'
+        label_filename = str(10000000 + self.counter)[1:] + '.txt'
         for k, v in file_dict.iteritems():
-            filename = str(10000000 + self.counter)[1:] + '.jpg'
+            
             if k.startswith('cam'):
                 cam_id = self.src_keys_dict[k]
                 dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
@@ -294,9 +296,12 @@ class MultiCamGrabLabeler(object):
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
+        if label:
+            with open(label_filename, 'wb') as fout:
+                fout.write(label)
         self.counter += 1
 
-    def add_base64_files(self, file_dict):
+    def add_base64_files(self, file_dict, label=''):
         from xeye_calib import resize_xeye_image_file
         if self.src_keys is None:
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)

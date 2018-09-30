@@ -69,9 +69,10 @@ class RealsenseAPI(Resource):
 ##
 if __name__ == '__main__':
     import logging
+    import socket
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
     app, api = create_app()
     # api.add_resource(SimpleAPI, '/simple_api/')
     api.add_resource(RealsenseAPI, '/realsense_api/')
-    app.run(debug=True, port=8950)
+    app.run(host='0.0.0.0', debug=True, port=8950)

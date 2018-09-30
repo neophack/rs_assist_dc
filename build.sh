@@ -8,6 +8,7 @@ cd MultiCamCalib && sh build.sh && cd ..
 
 echo 'build aicam-server'
 cd aicam-server && sh build.sh && cd ..
+[ ! -e aicam_server ] && ln -s aicam-server aicam_server
 
 echo 'build build_pyrealsense'
 sh build_pyrealsense.sh

@@ -88,6 +88,8 @@ def cap_deep(avg_tim):
 def cap_remote_deep():
     import requests
     target_ip = '127.0.0.1:8950'
+    target_ip = '172.24.24.253:8950'
+
     resp = requests.get('http://{}/realsense_api/'.format(target_ip)).json()
     tm = str(int(time.time() * 1000))
     d = {}
@@ -141,6 +143,7 @@ def cap_xeye():
     if i > 0:
         avg_tim = sum_tim / i
     else:
+        avg_tim = sum_tim
         print 'not find xeye images ;'
     t_end = (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print 'start:', t_start, ' end:', t_end, ' num:', len(img_list), avg_tim
@@ -149,8 +152,8 @@ def cap_xeye():
 
 def get_image():
     # avg_tim=1535631396551  #1535631396561
-    img_list={}
-    # img_list, avg_tim = cap_xeye()
+    img_list = {}
+    img_list, avg_tim = cap_xeye()
     # deep_img_dict = cap_deep(avg_tim)
     deep_img_dict = cap_remote_deep()
     deep_img_dict['xeye_image'] = img_list

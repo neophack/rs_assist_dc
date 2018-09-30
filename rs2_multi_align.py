@@ -58,8 +58,10 @@ pipeline_2.start(config_2)
 align1 = rs.align(rs.stream.color)
 align2 = rs.align(rs.stream.color)
 
-cam_dir_1 = 'depth_cam1'
-cam_dir_2 = 'depth_cam2'
+if not os.path.exists('tmp'):
+    os.makedirs('tmp')
+cam_dir_1 = 'tmp/depth_cam1'
+cam_dir_2 = 'tmp/depth_cam2'
 if not os.path.exists(cam_dir_1):
     os.makedirs(os.path.join(cam_dir_1, 'depth'))
     os.makedirs(os.path.join(cam_dir_1, 'color'))
