@@ -134,6 +134,9 @@ class Calibrator(object):
         self.counter = 1
         self.resize_xeye = resize_xeye
         self.record_path = os.path.join(dst_dir, 'calib_data.txt')
+        if os.path.exists(self.record_path):
+            with open(self.record_path, 'wb') as _:
+                pass
 
     def add_files(self, file_dict):
         """Parse files to add."""
@@ -141,6 +144,8 @@ class Calibrator(object):
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
             logger.info('Init Calibrator done.')
+            logger.info('src_keys_dict, {}'.format(self.src_keys_dict))
+            logger.info('file_dict, {}'.format(file_dict))
         for k, v in file_dict.iteritems():
             print 'k,v', k, v
             filename = str(10000000 + self.counter)[1:]
@@ -240,11 +245,11 @@ class Calibrator(object):
 class MultiCamGrabLabeler(object):
     """One line, one label."""
 
-    def __init__(self, base_dir, resize_xeye=True):
+    def __init__(self, base_dir, test_data_dir_name='test_data', resize_xeye=True):
         pass
         self.base_dir = base_dir
         self.param_dir = os.path.join(base_dir, 'parameters')
-        self.test_data_dir = os.path.join(base_dir, 'test_data')
+        self.test_data_dir = self.gen_test_data_dir_name()
         self.intrinsic_path = os.path.join(self.param_dir, 'leftIntrinsic.txt')
         self.extrinsic_path = os.path.join(self.param_dir, 'transsWorldToCam.txt')
         self.result_dir = os.path.join(base_dir, 'result')
@@ -252,6 +257,16 @@ class MultiCamGrabLabeler(object):
         self.counter = 0
         self.labels = []
         self.resize_xeye = resize_xeye
+
+    def gen_test_data_dir_name(self):
+        dir_name = os.path.join(self.base_dir, 'test_data')
+        if os.path.exists(dir_name):
+            namelist = [os.path.basename(e) for e in glob.glob(dir_name + '*')]
+            residuals = [e[len('test_data'):] for e in namelist]
+            nums = [int(e) for e in residuals if e != '']
+            new_num = max(nums) + 1 if nums else 0
+            dir_name += str(new_num)
+        return dir_name
 
     def init_from_test_data(self, test_data_dir_name):
         """Init from test data after calibration."""
@@ -265,12 +280,20 @@ class MultiCamGrabLabeler(object):
         self.counter = len(glob.glob(os.path.join(self.test_data_dir, '0', '*.jpg')))
         return self
 
+    def mark_that_last_box_prediction_is_wrong(self):
+        if self.counter < 2:
+            return
+        total_cam_num = len(self.rgb_cam_list) + len(self.rgb_of_depth_cam_list)
+        for cam_id in range(total_cam_num):
+            label_filename = str(10000000 + self.counter)[1:] + '.txt'
+            with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'ab') as fout:
+                fout.write('wrong_box+\n')
     def add_files(self, file_dict, label=''):
         from xeye_calib import resize_xeye_image_file
         if self.src_keys is None:
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
-            logger.info('Init Calibrator done.')
+            logger.info('Init MultiCamGrabLabeler done.')
         filename = str(10000000 + self.counter)[1:] + '.jpg'
         label_filename = str(10000000 + self.counter)[1:] + '.txt'
         for k, v in file_dict.iteritems():
@@ -280,8 +303,11 @@ class MultiCamGrabLabeler(object):
                 dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
-                print v, dst_path
+                # print v, dst_path
                 shutil.copy(v, dst_path)
+                if label:
+                    with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'wb') as fout:
+                        fout.write(label)
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):
                     cam_id = self.src_keys_dict[('xeye_image', i)]
@@ -293,12 +319,13 @@ class MultiCamGrabLabeler(object):
                         resize_xeye_image_file(imgpath, dst_path)
                     else:
                         shutil.copy(imgpath, dst_path)
+                    if label:
+                        with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'wb') as fout:
+                            fout.write(label + '\n')
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
-        if label:
-            with open(label_filename, 'wb') as fout:
-                fout.write(label)
+
         self.counter += 1
 
     def add_base64_files(self, file_dict, label=''):
@@ -365,10 +392,10 @@ class MultiCamGrabLabeler(object):
                                                  save_dir=self.result_dir,
                                                  show_each_step=False)
 
-        def show_images(self, images, resize_ratio=0.5, cols=2):
-            import infer_sequence
-            logger.info('show image. image size: {}'.format(len(images)))
-            return infer_sequence.show_multi_images(images, resize_ratio, cols)
+    def show_images(self, images, resize_ratio=0.5, cols=2):
+        import infer_sequence
+        logger.info('show image. image size: {}'.format(len(images)))
+        return infer_sequence.show_multi_images(images, resize_ratio, cols)
 
 
 def test_calib():

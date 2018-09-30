@@ -54,10 +54,10 @@ class RealsenseImageProvider(object):
         d = {}
         fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam1/depth'),
                                            os.path.join(self.depth_dir, 'depth_cam1/color'))
-        d['cam1_depth_file'] = base64.b64encode(open(fp_depth).read())
+        d['cam1_dept_file'] = base64.b64encode(open(fp_depth).read())
         d['cam1_color_file'] = base64.b64encode(open(fp_color).read())
         fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam2/depth'),
                                            os.path.join(self.depth_dir, 'depth_cam2/color'))
-        d['cam2_depth_file'] = base64.b64encode(open(fp_depth).read())
+        d['cam2_dept_file'] = base64.b64encode(open(fp_depth).read())
         d['cam2_color_file'] = base64.b64encode(open(fp_color).read())
         return d
