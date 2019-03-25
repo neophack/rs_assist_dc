@@ -1,4 +1,4 @@
-if [ -d librealsense ]; then
+if [ -d librealsense/build ]; then
   echo librealsense already exists.
   exit 0
 fi
@@ -10,6 +10,8 @@ else
 fi
 
 sudo apt-get update
+sudo apt-get install -y git
+sudo apt-get install -y cmake
 sudo apt-get install -y build-essential
 sudo apt-get install -y libgtk-3-dev
 sudo apt-get install -y pkg-config
@@ -18,6 +20,7 @@ sudo apt-get install -y libusb-1.0.0-dev
 sudo apt-get install -y libglfw3-dev
 sudo apt-get install -y libgl1-mesa-dev
 sudo apt-get install -y libglu1-mesa-dev
+sudo sudo apt autoremove
 if [ ! -e librealsense ]; then
   git clone https://github.com/IntelRealSense/librealsense.git
 fi
@@ -25,4 +28,4 @@ cd librealsense
 rm -rf build && mkdir -p build
 cd build
 cmake ../ -DBUILD_PYTHON_BINDINGS=bool:true  -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE_PATH
-make -j 8
+make -j 6
