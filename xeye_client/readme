@@ -1,0 +1,15 @@
+./python2/bin/python wangzh.py 3gshelf_3xeye_fixed_bg_350light_1sku 3g_test_1sku 192.168.0.99
+
+
+
+python product_event_xeye.py 3gshelf_3xeye_fixed_bg_350light_1sku 3g_a1_1sku 192.168.0.99
+param1: scene
+param2: group
+param3: db_host
+
+python photo.py 3gshelf_3xeye_rnd_bg_350light_45sku aicam_3xeye_45 192.168.0.92
+
+download_image.py evaluate/20180907/3gshelf_3xeye_rnd_bg_350light_45sku/aicam_3xeye_45/aicam_3xeye_45_evetn_1_product.txt  20180907 3gshelf_3xeye_rnd_bg_350light_45sku  aicam_3xeye_45 4101,4102,4103,4103,4105,4106,4107,4108,4109,4110,4111,4112,4112,4113,4114,4115,4116,4117,4118,4125,4126,4127,4128
+
+python download_image.py evaluate/20180907/3gshelf_3xeye_fixed_bg_350light_1sku/3g_b2_1sku/3g_b2_1sku_evetn_1_product.txt 20180907 3gshelf_3xeye_fixed_bg_350light_1sku 3g_a1_1sku 4119,4120,4121 192.168.0.92
+

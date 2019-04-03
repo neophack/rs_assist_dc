@@ -1,0 +1,9 @@
+INFO: 2018-09-30 11:15:17: _internal.py:88 140736217097088  * Running on http://127.0.0.1:8950/ (Press CTRL+C to quit)
+INFO: 2018-09-30 11:15:17: _internal.py:88 140736217097088  * Restarting with stat
+WARNING: 2018-09-30 11:15:17: _internal.py:88 140736217097088  * Debugger is active!
+INFO: 2018-09-30 11:15:17: _internal.py:88 140736217097088  * Debugger PIN: 192-820-984
+INFO: 2018-09-30 11:17:13: _internal.py:88 123145413001216 127.0.0.1 - - [30/Sep/2018 11:17:13] "POST /simple_api/ HTTP/1.1" 404 -
+INFO: 2018-09-30 11:19:04: _internal.py:88 123145413001216 127.0.0.1 - - [30/Sep/2018 11:19:04] "POST /realsense_api/ HTTP/1.1" 405 -
+INFO: 2018-09-30 11:19:47: _internal.py:88 123145413001216 127.0.0.1 - - [30/Sep/2018 11:19:47] "GET /realsense_api/ HTTP/1.1" 200 -
+INFO: 2018-09-30 11:20:05: _internal.py:88 123145413001216 127.0.0.1 - - [30/Sep/2018 11:20:05] "GET /realsense_api/ HTTP/1.1" 200 -
+INFO: 2018-09-30 11:20:18: _internal.py:88 123145413001216 127.0.0.1 - - [30/Sep/2018 11:20:18] "GET /realsense_api/ HTTP/1.1" 200 -

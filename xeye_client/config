@@ -1,0 +1,8 @@
+##
+ip="192.168.4.135"
+serverip="192.168.254.23"
+ntpip="192.168.254.23"
+serverport="12345"
+cameraid="4135"
+frametype="0"
+##end

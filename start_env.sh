@@ -3,23 +3,18 @@
 
 source ./setenv.sh
 
-cd aicam-server
+[ $# -lt 1 ] && echo $0 basedir && exit 1
+
+
+cd aicam_server
 sh start.sh
 cd  ..
 
-rm -rf depth_cam*
-ps -ef|grep rs2_multi_align.py |awk '{print $2}'|xargs kill -9
-nohup python rs2_multi_align.py > rs2_multi_align.log 2>&1 &
-
-echo 'sleep 2'
-sleep 2
-
-
 echo 'start data_collection ...'
 
-basedir='data/batch5'
+basedir=$1
 mkdir -p $basedir
 
-python gen_tm.py $basedir
+python gen_tm.py $*
 
 
