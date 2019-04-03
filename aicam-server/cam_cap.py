@@ -46,7 +46,6 @@ def get_deep_file(src_path,dst_path):
     img_path=""
     for root, dirs, files in os.walk(src_path):
         for f in files:
-            # print f
             if len(f)<3:
                 continue
             fn=long(f.split('.')[0])
@@ -55,19 +54,16 @@ def get_deep_file(src_path,dst_path):
                 tim_inv=_abs
                 if os.path.exists(src_pic):
                     os.remove(src_pic)
-                    #print 'remove',src_pic
                 src_pic=os.path.realpath("%s/%s" % (root,f))
                 src_img_name=f
-                #print src_pic,tim_inv
             else:
                 os.remove("%s/%s" % (root,f))
-                #print 'remove',src_pic
     #shutil.move(src, "%s/%s/" % (cam_path,cam_dir))
     #shutil.copy(src_pic, ("%s/%s/" % (deep_path_bak,"depth_cam1/color/")))
     if len(src_pic)>2:
         shutil.move(src_pic, dst_path)
         img_path=os.path.realpath("%s/%s" % (dst_path,src_img_name))
-        print img_path,avg_tim
+        print(img_path,avg_tim)
     else:
         print('not find file :',src_path)
     return img_path
@@ -99,7 +95,7 @@ def cap_xeye():
             #print 'root1', root
             for root1, dirs1, files1 in os.walk(root+"/"+cam_dir):
                 for f in files1:
-                    print root1,f
+                    print(root1,f)
                     my_time=long(f.split('.')[0])
                     if last_time == 0 or last_time<my_time:
                         last_time=my_time
@@ -116,17 +112,18 @@ def cap_xeye():
             sum_tim+=last_time
             i+=1
             if not os.path.exists(last_pic):
-                print 'not find last_pic:%s-%s-%s ' % (last_pic,cam_path,cam_dir)
+                print('not find last_pic:%s-%s-%s ' % (last_pic,cam_path,cam_dir))
             else:
                 shutil.move(last_pic, "%s/%s/" % (cam_path,cam_dir))
                 real_path=os.path.realpath("%s/%s/%s.jpg" % (cam_path,cam_dir,last_time))
                 img_list.append(real_path)
+    avg_tim = -1.0
     if i>0:
         avg_tim=sum_tim/i
     else:
-        print 'not find xeye images ;'
+        print('not find xeye images ;')
     t_end=(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    print 'start:',t_start,' end:',t_end ,' num:',len(img_list),avg_tim
+    print('start:',t_start,' end:',t_end ,' num:',len(img_list),avg_tim)
     return img_list,avg_tim
 def get_image():
     #avg_tim=1535631396551  #1535631396561
@@ -138,7 +135,7 @@ def get_image():
 
 if __name__ == '__main__':
     deep_img_dict=get_image()
-    print json.dumps(deep_img_dict,indent=4)
+    print(json.dumps(deep_img_dict,indent=4))
     #avg_tim=1535631396551  #1535631396561
     #img_list,avg_tim=cap_xeye()
     #deep_img_dict=cap_deep(avg_tim)

@@ -16,7 +16,7 @@ import sys
 import shutil
 import numpy as np
 import logging
-import commands
+import subprocess
 
 
 logger = logging.getLogger()
@@ -40,7 +40,7 @@ def align(tm_data, prefix, src_dirs, align_offsets):
     for i, d in enumerate(src_dirs):
         filelist = glob.glob(os.path.join(d, '15*.jpg'))
         if not filelist:
-            print os.path.join(d, '15*.png')
+            print(os.path.join(d, '15*.png'))
             filelist = glob.glob(os.path.join(d, '15*.png'))
         assert filelist, d
         tms = np.array(sorted(map(lambda x: int(x.split('/')[-1].split('.')[0]), filelist)))
@@ -141,7 +141,7 @@ class Calibrator(object):
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
             logger.info('Init Calibrator done.')
         for k, v in file_dict.iteritems():
-            print 'k,v', k, v
+            print('k,v', k, v)
             filename = str(10000000 + self.counter)[1:]
             if k.startswith('cam'):
                 if 'dept' in k:
@@ -151,8 +151,8 @@ class Calibrator(object):
                     cam_id), 'cam0', filename + '.' + v.split('.')[-1])
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
-                print 'calib data copy', v, dst_path
-                print >> sys.stderr, 'calib data copy', v, dst_path
+                print('calib data copy', v, dst_path)
+                print('calib data copy', v, dst_path, file=sys.stderr)
                 with open(self.record_path, 'ab') as fout:
                     fout.write('cp ' + v + ' ' + dst_path + '\n')
             elif k.startswith('xeye'):
@@ -190,10 +190,11 @@ class Calibrator(object):
     def gen_calib_parameters(self):
         logger.debug('dst_dir: {}'.format(self.dst_dir))
         cmd = 'sh calibrate.sh {}'.format(self.dst_dir)
-        [status, output] = commands.getstatusoutput(cmd)
+        # [status, output] = commands.getstatusoutput(cmd)
+        output = subprocess.check_output(cmd, shell=True)
         assert os.path.exists(os.path.join(self.dst_dir, 'parameters/leftIntrinsic.txt')), output
         assert os.path.exists(os.path.join(self.dst_dir, 'parameters/transsWorldToCam.txt')), output
-        return status, output
+        return 0, output
 
 
 class MultiCamGrabLabeler(object):
@@ -237,7 +238,7 @@ class MultiCamGrabLabeler(object):
                 dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
-                print v, dst_path
+                print(v, dst_path)
                 shutil.copy(v, dst_path)
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):
@@ -245,7 +246,7 @@ class MultiCamGrabLabeler(object):
                     dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
-                    print imgpath, dst_path
+                    print(imgpath, dst_path)
                     if self.resize_xeye:
                         resize_xeye_image_file(imgpath, dst_path)
                     else:
@@ -273,7 +274,7 @@ class MultiCamGrabLabeler(object):
 
             for i, cam_id in enumerate(self.rgb_of_depth_cam_list):
                 depth_cam_id = cam_id + len(self.rgb_of_depth_cam_list)
-                print 'i, cam_id', i, cam_id
+                print('i, cam_id', i, cam_id)
                 if len(depth_file_seqs) <= i:
                     depth_file_seqs.append([])
                 filename = str(10000000 + counter - 2)[1:] + '.jpg'
@@ -296,7 +297,6 @@ class MultiCamGrabLabeler(object):
 
 
 def test_calib():
-    import commands
     tm_file = './data/test_gen_tm.txt'
     src_dirs = ['./data/camera-4068',
                 './data/camera-4069',
@@ -311,9 +311,8 @@ def test_calib():
     dst_dir = './data/batch2/calib_data'
     reconstruct_calib_data(tm_file, src_dirs, align_offsets, dst_dir)
     cmd = 'sh calibrate.sh {}'.format('data/batch2')
-    [status, output] = commands.getstatusoutput(cmd)
-    print status
-    print output
+    output = subprocess.check_output(cmd)
+    print(output)
 
 
 def test_calibrator():
@@ -368,7 +367,7 @@ def rerun_multicamgrablabeler():
     labeler = MultiCamGrabLabeler(base_dir).init_from_test_data(test_dir)
 
     images = labeler.gen_label(counter=2)
-    print 'images lengh', len(images)
+    print('images lengh', len(images))
     infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=4)
 
 
@@ -390,6 +389,5 @@ def test_event():
 
 if __name__ == '__main__':
     rerun_multicamgrablabeler()
-    # print test_calibrator()
-    # print test_multicamgrablabeler()
-    # print test_event()
+    # print(test_multicamgrablabeler())
+    # print(test_event())

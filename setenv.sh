@@ -1,2 +1,1 @@
-
-export PYTHONPATH=`readlink -f librealsense/build/wrappers/python`:$PYTHONPATH
+export PYTHONPATH=/home/xteam/space/camdeep/librealsense/build/wrappers/python:$PYTHONPATH

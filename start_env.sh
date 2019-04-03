@@ -3,7 +3,7 @@
 
 source ./setenv.sh
 
-cd aicam_server
+cd aicam-server
 sh start.sh
 cd  ..
 
@@ -17,7 +17,7 @@ sleep 2
 
 echo 'start data_collection ...'
 
-basedir='data/batch4'
+basedir='data/batch5'
 mkdir -p $basedir
 
 python gen_tm.py $basedir
