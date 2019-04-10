@@ -133,6 +133,9 @@ try:
         with open(color_flag_2, 'wb') as fout:
             pass
         time.sleep(0.1)
+except Exception as e:
+    print(e)
+    print('Error occured')
 
 finally:
     # Stop streaming

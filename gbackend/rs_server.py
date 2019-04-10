@@ -28,7 +28,7 @@ def get_deep_file(src_path, color_image_dir):
             if not f.endswith('.flag'):
                 continue
 
-            fn = long(f.split('.')[0])
+            fn = int(f.split('.')[0])
             _abs = abs(fn - now_tim)
             if _abs < tim_inv:
                 tim_inv = _abs
@@ -64,12 +64,10 @@ class RealsenseImageProvider(object):
         fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam1/depth'),
                                            os.path.join(self.depth_dir, 'depth_cam1/color'))
         import sys
-        print >> sys.stderr, fp_depth
-        print >> sys.stderr, fp_color
-        d['cam1_dept_file'] = base64.b64encode(open(fp_depth).read())
-        d['cam1_color_file'] = base64.b64encode(open(fp_color).read())
+        d['cam1_dept_file'] = base64.b64encode(open(fp_depth, 'rb').read()).decode('utf-8')
+        d['cam1_color_file'] = base64.b64encode(open(fp_color, 'rb').read()).decode('utf-8')
         fp_depth, fp_color = get_deep_file(os.path.join(self.depth_dir, 'depth_cam2/depth'),
                                            os.path.join(self.depth_dir, 'depth_cam2/color'))
-        d['cam2_dept_file'] = base64.b64encode(open(fp_depth).read())
-        d['cam2_color_file'] = base64.b64encode(open(fp_color).read())
+        d['cam2_dept_file'] = base64.b64encode(open(fp_depth, 'rb').read()).decode('utf-8')
+        d['cam2_color_file'] = base64.b64encode(open(fp_color, 'rb').read()).decode('utf-8')
         return d

@@ -10,6 +10,7 @@ sleep 2
 rm -rf tmp
 mkdir -p log
 mkdir -p tmp
+nohup python clean_old_image.py > /dev/null 2>&1 &
 nohup python rs2_multi_align.py > log/rs2_multi_align.log 2>&1 &
 nohup python gbackend/flask_simple_api.py > log/simple_api.log 2>&1 &
 
