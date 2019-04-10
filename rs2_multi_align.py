@@ -68,13 +68,13 @@ if not os.path.exists(cam_dir_1):
 if not os.path.exists(cam_dir_2):
     os.makedirs(os.path.join(cam_dir_2, 'depth'))
     os.makedirs(os.path.join(cam_dir_2, 'color'))
-with open(os.path.join(cam_dir_1, 'sn.txt'), 'wb') as fout:
+with open(os.path.join(cam_dir_1, 'sn.txt'), 'w') as fout:
     fout.write(sn_list[0] + '\n')
-with open(os.path.join(cam_dir_2, 'sn.txt'), 'wb') as fout:
+with open(os.path.join(cam_dir_2, 'sn.txt'), 'w') as fout:
     fout.write(sn_list[1] + '\n')
 
 
-print 'start saving images ...'
+print('start saving images ...')
 try:
     last_tm = time.time()
     while True:
@@ -83,7 +83,7 @@ try:
         current_tm = time.time()
         if current_tm - last_tm > 1:
             last_tm = current_tm
-            print 'saving: ', current_tm
+            print('saving: ', current_tm)
         # Camera 1
         # Wait for a coherent pair of frames: depth and color
         frames_1 = pipeline_1.wait_for_frames()

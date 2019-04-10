@@ -27,7 +27,7 @@ def resize_xeye_image(data):
 
 def resize_xeye_image_file(filepath, dst_filepath):
     """Resize and crop xeye image to 640 * 480."""
-    data = open(filepath).read()
+    data = open(filepath, 'rb').read()
     imgdata = np.fromstring(data, dtype='uint8')
     img = cv2.imdecode(imgdata, 1)
     rimg = cv2.resize(img, (720, 480))

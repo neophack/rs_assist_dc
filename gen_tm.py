@@ -39,7 +39,7 @@ def run():
         while True:
             print('input PRODUCT_ID, "calib", "event", "e" or type Return ...')
 
-            inp = raw_input()
+            inp = input()
             if inp == '':
                 tm = str(int(time.time() * 1000))
                 items.insert(0, tm)
@@ -173,7 +173,7 @@ def run2():
         logger.info('Enter calibration mode')
         calib_dir = os.path.join(base_dir, 'calib_data')
         if os.path.exists(calib_dir):
-            shutil.rmtree()
+            shutil.rmtree(calib_dir)
         param_dir = os.path.join(base_dir, 'parameters')
         if os.path.exists(param_dir):
             shutil.rmtree(param_dir)
@@ -184,7 +184,7 @@ def run2():
         logger.info('If you want to recalibrate, restart with "python gen_tm $dst_folder calib"')
     background_image_taken = False
     current_label = ''
-    with open(filename, 'ab') as fout:
+    with open(filename, 'a') as fout:
         items = []
         while True:
             if prefix == 'calib':
@@ -203,7 +203,7 @@ def run2():
                 else:
                     while True:
                         logger.info('Press Return to take the first background image...')
-                        inp = raw_input()
+                        inp = input()
                         if inp != '':
                             continue
                         else:
@@ -215,7 +215,7 @@ def run2():
                             background_image_taken = True
                             break
                     continue
-            inp = raw_input()
+            inp = input()
             if inp == '-':
                 labeler.mark_that_last_box_prediction_is_wrong()
             if (len(inp) > 5 and inp.isdigit()):
@@ -227,7 +227,7 @@ def run2():
                 items.insert(0, prefix)
                 line = '\t'.join(items)
                 logger.info('line: {}'.format(line))
-                print >> fout, line
+                print(line, file=fout)
                 if prefix == 'calib':
                     file_dict = get_calib_image()
                 else:
@@ -249,7 +249,7 @@ def run2():
                 line = 'start recording calibration data ...'
                 logger.info('line: {}'.format(line))
                 prefix = 'calib'
-                print >> fout, line
+                print(line, file=fout)
             elif inp == 'collection':
                 if prefix == 'calib':
                     logger.info('If you want to end calibration, input "e" and Return.')
@@ -260,7 +260,7 @@ def run2():
                 prefix = 'collection'
 
                 logger.info('line: {}'.format(line))
-                print >> fout, line
+                print(line, file=fout)
             elif inp != 'e':
                 items.append(inp)
             else:

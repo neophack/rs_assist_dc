@@ -135,7 +135,7 @@ class Calibrator(object):
         self.resize_xeye = resize_xeye
         self.record_path = os.path.join(dst_dir, 'calib_data.txt')
         if os.path.exists(self.record_path):
-            with open(self.record_path, 'wb') as _:
+            with open(self.record_path, 'w') as _:
                 pass
 
     def add_files(self, file_dict):
@@ -146,7 +146,7 @@ class Calibrator(object):
             logger.info('Init Calibrator done.')
             logger.info('src_keys_dict, {}'.format(self.src_keys_dict))
             logger.info('file_dict, {}'.format(file_dict))
-        for k, v in file_dict.iteritems():
+        for k, v in file_dict.items():
             print('k,v', k, v)
             filename = str(10000000 + self.counter)[1:]
             if k.startswith('cam'):
@@ -159,7 +159,7 @@ class Calibrator(object):
                     os.makedirs(os.path.dirname(dst_path))
                 print('calib data copy', v, dst_path)
                 print('calib data copy', v, dst_path, file=sys.stderr)
-                with open(self.record_path, 'ab') as fout:
+                with open(self.record_path, 'a') as fout:
                     fout.write('cp ' + v + ' ' + dst_path + '\n')
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):
@@ -169,11 +169,11 @@ class Calibrator(object):
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
                     if self.resize_xeye:
-                        with open(self.record_path, 'ab') as fout:
+                        with open(self.record_path, 'a') as fout:
                             fout.write('resize ' + imgpath + ' ' + dst_path + '\n')
                         # resize_xeye_image_file(imgpath, dst_path)
                     else:
-                        with open(self.record_path, 'ab') as fout:
+                        with open(self.record_path, 'a') as fout:
                             fout.write('cp' + imgpath + ' ' + dst_path + '\n')
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
@@ -197,9 +197,9 @@ class Calibrator(object):
                     cam_id), 'cam0', filename + '.jpg')
                 if not os.path.exists(os.path.dirname(dst_path)):
                     os.makedirs(os.path.dirname(dst_path))
-                print 'calib data copy', v, dst_path
-                print >> sys.stderr, 'calib data copy', v, dst_path
-                with open(dst_path, 'wb') as fout:
+                print('calib data copy', v, dst_path)
+                # print >> sys.stderr, 'calib data copy', v, dst_path
+                with open(dst_path, 'w') as fout:
                     fout.write(base64.b64decode(v))
             elif k.startswith('xeye'):
                 for i, imgb64 in enumerate(v):
@@ -209,11 +209,11 @@ class Calibrator(object):
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
                     if self.resize_xeye:
-                        with open(self.record_path, 'ab') as fout:
+                        with open(self.record_path, 'a') as fout:
                             fout.write('resize ' + imgb64 + ' ' + dst_path + '\n')
                         # resize_xeye_image_file(imgpath, dst_path)
                     else:
-                        with open(dst_path, 'wb') as fout:
+                        with open(dst_path, 'w') as fout:
                             fout.write(base64.b64decode(imgb64))
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
@@ -287,7 +287,7 @@ class MultiCamGrabLabeler(object):
         total_cam_num = len(self.rgb_cam_list) + len(self.rgb_of_depth_cam_list)
         for cam_id in range(total_cam_num):
             label_filename = str(10000000 + self.counter)[1:] + '.txt'
-            with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'ab') as fout:
+            with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'a') as fout:
                 fout.write('wrong_box+\n')
     def add_files(self, file_dict, label=''):
         from xeye_calib import resize_xeye_image_file
@@ -307,7 +307,7 @@ class MultiCamGrabLabeler(object):
                 # print v, dst_path
                 shutil.copy(v, dst_path)
                 if label:
-                    with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'wb') as fout:
+                    with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'w') as fout:
                         fout.write(label)
             elif k.startswith('xeye'):
                 for i, imgpath in enumerate(v):
@@ -315,13 +315,13 @@ class MultiCamGrabLabeler(object):
                     dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
-                    print imgpath, dst_path
+                    print(imgpath, dst_path)
                     if self.resize_xeye:
                         resize_xeye_image_file(imgpath, dst_path)
                     else:
                         shutil.copy(imgpath, dst_path)
                     if label:
-                        with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'wb') as fout:
+                        with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'w') as fout:
                             fout.write(label + '\n')
             else:
                 logger.warn('Unrocognize key: {}'.format(k))

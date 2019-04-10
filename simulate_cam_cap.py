@@ -61,10 +61,10 @@ def get_collection_image():
 
 def run():
     for i in range(10):
-        print get_calib_image()
+        print(get_calib_image())
 
     for i in range(10):
-        print get_collection_image()
+        print(get_collection_image())
 
 if __name__ == '__main__':
     run()
