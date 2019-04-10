@@ -22,14 +22,12 @@ class ImageTeller(object):
     def __init__(self):
         self.logger = logging.getLogger()
         self.logger.debug('Init ImageTeller')
-        print 'Init ImageTeller'
-        print self.logger.name, self.logger.handlers
+        print('Init ImageTeller')
+        print(self.logger.name, self.logger.handlers)
 
     def run(self, args):
         try:
-            # print >> sys.stderr, 'args:', args
             image_b64 = args['image_b64']
-            # print >> sys.stderr, 'image_b64:', image_b64
             imgdata = np.fromstring(base64.b64decode(image_b64), dtype='uint8')
             image = cv2.imdecode(imgdata, 1)
             h, w = image.shape[0: 2]
