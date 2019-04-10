@@ -25,6 +25,7 @@ if [ ! -e librealsense ]; then
   git clone https://github.com/IntelRealSense/librealsense.git
 fi
 cd librealsense
+sed -i 's/TIMEOUT 60 /TIMEOUT 6000 /g' third-party/libtm/resources/CMakeLists.txt
 rm -rf build && mkdir -p build
 cd build
 cmake ../ -DBUILD_PYTHON_BINDINGS=bool:true  -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE_PATH
