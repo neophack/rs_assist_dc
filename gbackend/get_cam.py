@@ -10,13 +10,13 @@ Wrapper for actual worker.
 Authors: wangxiao05(wangxiao05@baidu.com)
 Date:    2018/07/23 14:55:56
 """
-
+import sys
 import base64
 
 
-def test():
+def test(ip):
     import requests
-    url = 'http://127.0.0.1:8950/realsense_api/'
+    url = 'http://{}:8950/realsense_api/'.format(ip)
     # url = 'http://172.24.24.253:8950/realsense_api/'
     r = requests.get(url)
     print('Response:')
@@ -24,4 +24,8 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    if len(sys.argv) >= 2:
+        ip = sys.argv[1]
+    else:
+        ip = '127.0.0.1'
+    test(ip)
