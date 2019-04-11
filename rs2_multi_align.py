@@ -51,9 +51,18 @@ config_2.enable_stream(rs.stream.depth, WIDTH, HEIGHT, rs.format.z16, 30)
 config_2.enable_stream(rs.stream.color, WIDTH, HEIGHT, rs.format.bgr8, 30)
 
 
+
 # Start streaming from both cameras
-pipeline_1.start(config_1)
-pipeline_2.start(config_2)
+cfg1 = pipeline_1.start(config_1)
+cfg2 = pipeline_2.start(config_2)
+
+
+profile = cfg1.get_stream(rs.stream.depth)
+intr1 = profile.as_video_stream_profile().get_intrinsics()
+print('intr1:', intr1)
+profile = cfg2.get_stream(rs.stream.depth)
+intr2 = profile.as_video_stream_profile().get_intrinsics()
+print('intr2:', intr2)
 
 align1 = rs.align(rs.stream.color)
 align2 = rs.align(rs.stream.color)
@@ -70,8 +79,12 @@ if not os.path.exists(cam_dir_2):
     os.makedirs(os.path.join(cam_dir_2, 'color'))
 with open(os.path.join(cam_dir_1, 'sn.txt'), 'w') as fout:
     fout.write(sn_list[0] + '\n')
+with open(os.path.join(cam_dir_1, 'intr.txt'), 'w') as fout:
+    fout.write(str(intr1) + '\n')
 with open(os.path.join(cam_dir_2, 'sn.txt'), 'w') as fout:
     fout.write(sn_list[1] + '\n')
+with open(os.path.join(cam_dir_2, 'intr.txt'), 'w') as fout:
+    fout.write(str(intr2) + '\n')
 
 
 print('start saving images ...')
