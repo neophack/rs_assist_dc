@@ -58,12 +58,14 @@ function run_cmd(){
 }
 
 function reset_xeye(){
+    dst_dir=$1
+    tm=$2
     while read ip cameraid
     do
         {
         echo "#########################${ip}####${cameraid}######################################" > ttt
-        tm=$(date +%s%3N)
-        filename=${tm}_${cameraid}
+        # tm=$(date +%s%3N)
+        filename=${dst_dir}/${tm}_${cameraid}
         (
             echo_cmd2 xeye010OK
             echo_cmd "get jpg ${filename}.jpg"
@@ -77,4 +79,4 @@ wait
 
 
 #run_cmd $1
-reset_xeye
+reset_xeye $@

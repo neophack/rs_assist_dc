@@ -67,6 +67,17 @@ def run():
                 sys.exit(0)
 
 
+def get_remote_images(ip):
+    import requests
+    url = 'http://{}:8950/realsense_api/'.format(ip)
+    # url = 'http://172.24.24.253:8950/realsense_api/'
+    r = requests.get(url)
+
+    d = r.json()
+    return d
+
+
+
 def run1():
     """Data collection pipeline."""
     from align_all_sensor import reconstruct_calib_data
@@ -104,7 +115,7 @@ def run1():
                 print(line, file=fout)
                 file_dict = get_image()
                 if prefix == 'calib':
-                    print('file_dict', json.dumps(file_dict, indent=2))
+                    print('check file_dict', json.dumps(file_dict, indent=2))
                     calib.add_files(file_dict)
                 else:
                     print('add file_dict to labeler')

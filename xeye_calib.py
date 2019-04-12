@@ -36,6 +36,18 @@ def resize_xeye_image_file(filepath, dst_filepath):
     with open(dst_filepath, 'wb') as fout:
         fout.write(imagedata)
 
+def resize_rgb_b64(imgb64, dst_filepath):
+    """Resize and crop xeye image to 640 * 480."""
+    data = base64.b64decode(imgb64)
+    imgdata = np.fromstring(data, dtype='uint8')
+    img = cv2.imdecode(imgdata, 1)
+    rimg = cv2.resize(img, (720, 480))
+    rimg = rimg[:, 40: 680, :]
+    _, imagedata = cv2.imencode('.jpg', rimg)
+    with open(dst_filepath, 'wb') as fout:
+        fout.write(imagedata)
+
+
 
 def test():
     imgpath = '1534509152869.jpg'

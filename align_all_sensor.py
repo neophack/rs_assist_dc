@@ -98,7 +98,6 @@ def reconstruct_calib_data(tm_file, src_dirs, align_offsets, dst_dir='tmp'):
                 dst_filepath = os.path.join(dirname, dst_filename)
                 resize_xeye_image_file(filepath, dst_filepath)
 
-
 def init_cam_set(file_dict):
     """Init cam ids.
 
@@ -109,7 +108,8 @@ def init_cam_set(file_dict):
     for k in file_dict:
         if k.endswith('dept_file'):
             depth_cam_num += 1
-    rgb_keys = [('xeye_image', i) for i in range(len(file_dict['xeye_image']))]
+    # rgb_keys = [('xeye_image', i) for i in range(len(file_dict['xeye_image']))]
+    rgb_keys = sorted([k for k in file_dict.keys() if k.startswith('rgb')])
     depth_keys = []
     for k in range(depth_cam_num):
         rgb_keys.append('cam{}_color_file'.format(k + 1))
@@ -123,6 +123,11 @@ def init_cam_set(file_dict):
     src_keys.extend(depth_keys)
     return src_keys, rgb_cam_list, rgb_of_depth_cam_list
 
+
+def test_init_cam_set():
+    keys = ['cam1_dept_file', 'cam1_color_file', 'cam2_dept_file', 'cam2_color_file', 'rgb0_color_file']
+    d = dict(zip(keys, keys))
+    print(init_cam_set(d))
 
 class Calibrator(object):
     """The line, one label."""
@@ -140,18 +145,19 @@ class Calibrator(object):
 
     def add_files(self, file_dict):
         """Parse files to add."""
+        from xeye_calib import resize_rgb_b64
         if self.src_keys is None:
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
             logger.info('Init Calibrator done.')
             logger.info('src_keys_dict, {}'.format(self.src_keys_dict))
-            logger.info('file_dict, {}'.format(file_dict))
+            logger.info('file_dict.keys, {}'.format(file_dict.keys()))
         for k, v in file_dict.items():
-            print('k,v', k, v)
             filename = str(10000000 + self.counter)[1:]
             if k.startswith('cam'):
                 if 'dept' in k:
                     continue
+                print(self.src_keys_dict.keys())
                 cam_id = self.src_keys_dict[k]
                 dst_path = os.path.join(self.calib_data_dir, str(
                     cam_id), 'cam0', filename + '.' + v.split('.')[-1])
@@ -159,22 +165,22 @@ class Calibrator(object):
                     os.makedirs(os.path.dirname(dst_path))
                 print('calib data copy', v, dst_path)
                 print('calib data copy', v, dst_path, file=sys.stderr)
-                with open(self.record_path, 'a') as fout:
-                    fout.write('cp ' + v + ' ' + dst_path + '\n')
-            elif k.startswith('xeye'):
-                for i, imgpath in enumerate(v):
-                    cam_id = self.src_keys_dict[('xeye_image', i)]
-                    dst_path = os.path.join(self.calib_data_dir, str(
-                        cam_id), 'cam0', filename + '.' + imgpath.split('.')[-1])
-                    if not os.path.exists(os.path.dirname(dst_path)):
-                        os.makedirs(os.path.dirname(dst_path))
-                    if self.resize_xeye:
-                        with open(self.record_path, 'a') as fout:
-                            fout.write('resize ' + imgpath + ' ' + dst_path + '\n')
-                        # resize_xeye_image_file(imgpath, dst_path)
-                    else:
-                        with open(self.record_path, 'a') as fout:
-                            fout.write('cp' + imgpath + ' ' + dst_path + '\n')
+                # with open(self.record_path, 'a') as fout:
+                #     fout.write('cp ' + v + ' ' + dst_path + '\n')
+                with open(dst_path, 'wb') as fout:
+                    fout.write(base64.b64decode(v))
+            elif k.startswith('rgb'):
+                cam_id = self.src_keys_dict[k]
+                dst_path = os.path.join(self.calib_data_dir, str(
+                    cam_id), 'cam0', filename + '.' + imgpath.split('.')[-1])
+                if not os.path.exists(os.path.dirname(dst_path)):
+                    os.makedirs(os.path.dirname(dst_path))
+                if self.resize_xeye:
+                    resize_rgb_b64(v, dst_path)
+                else:
+                    with open(dst_path, 'wb') as fout:
+                        fout.write(base64.b64decode(v))
+
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
@@ -491,6 +497,7 @@ def test_event():
 
 
 if __name__ == '__main__':
-    rerun_multicamgrablabeler()
+    test_init_cam_set()
+    # rerun_multicamgrablabeler()
     # print(test_multicamgrablabeler())
     # print(test_event())

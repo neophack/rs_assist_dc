@@ -13,8 +13,23 @@ Date:    2018/07/23 14:55:56
 import os
 import base64
 import time
+import subprocess
+import glob
+import sys
 
 
+
+def get_rgb_cam_file():
+    tm = str(int(time.time() * 1000))
+    cmd = 'cd getpic && bash getpic.sh ../tmp/ {}'.format(tm)
+    subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+    fps = sorted(glob.glob('tmp/{}_*.jpg'.format(tm)))
+    print('fps: {}'.format(fps), file=sys.stderr)
+    assert(len(fps) == 1)
+    return fps
+    
+    
+    
 def get_deep_file(src_path, color_image_dir):
     tim_inv = 9999999999999
     now_tim = int(time.time() * 1000)
@@ -70,4 +85,11 @@ class RealsenseImageProvider(object):
                                            os.path.join(self.depth_dir, 'depth_cam2/color'))
         d['cam2_dept_file'] = base64.b64encode(open(fp_depth, 'rb').read()).decode('utf-8')
         d['cam2_color_file'] = base64.b64encode(open(fp_color, 'rb').read()).decode('utf-8')
+        fps = get_rgb_cam_file()
+        for i, fp in enumerate(fps):
+            d['rgb{}_color_file'.format(i)] = base64.b64encode(open(fp, 'rb').read()).decode('utf-8')
         return d
+
+
+if __name__ == '__main__':
+    get_rgb_cam_file()

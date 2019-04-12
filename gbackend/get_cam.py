@@ -14,13 +14,13 @@ import sys
 import base64
 
 
-def test(ip):
+def get_remote_json(ip):
     import requests
     url = 'http://{}:8950/realsense_api/'.format(ip)
     # url = 'http://172.24.24.253:8950/realsense_api/'
     r = requests.get(url)
-    print('Response:')
-    print(r.json().keys())
+
+    return r.json()
 
 
 if __name__ == '__main__':
@@ -28,4 +28,6 @@ if __name__ == '__main__':
         ip = sys.argv[1]
     else:
         ip = '127.0.0.1'
-    test(ip)
+    r = get_remote_json(ip)
+    print('Response:')
+    print(r.keys())
