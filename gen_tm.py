@@ -208,6 +208,7 @@ def run2():
                     logger.info('current label: {}. You should do ...'.format(current_label))
                     logger.info('  * input scan a PRODUCT_ID to set label,')
                     if current_label:
+
                         logger.info('  * input "e" to end program.')
                         logger.info('  * press Return to collect image of current label.'.format(current_label))
                         logger.info('  * input "-" to indicate last box is not right.'.format(current_label))
@@ -221,7 +222,7 @@ def run2():
                             file_dict = get_collection_image()
                             labeler.add_files(file_dict, inp)
                             images = labeler.gen_label()
-
+                            print('type: {}'.format(type(images)))
                             items = []
                             background_image_taken = True
                             break
@@ -238,7 +239,6 @@ def run2():
                 items.insert(0, prefix)
                 line = '\t'.join(items)
                 logger.info('line: {}'.format(line))
-                print(line, file=fout)
                 if prefix == 'calib':
                     file_dict = get_calib_image()
                 else:
@@ -246,6 +246,7 @@ def run2():
                 # print 'file_dict', json.dumps(file_dict, indent=2)
                 if prefix == 'calib':
                     # print 'calib add file_dict', json.dumps(file_dict, indent=2)
+                    logger.info('check file_dict: {}'.format(file_dict.keys()))
                     calib.add_files(file_dict)
                 else:
 
@@ -277,7 +278,7 @@ def run2():
             else:
                 if prefix == 'calib':
                     logger.info('start calibration ...')
-                    calib.cp_files()
+                    # calib.cp_files()
                     [status, output] = calib.gen_calib_parameters()
                     logger.info('calibration status: {}'.format(status))
                     logger.info('calibration output: {}'.format(output))

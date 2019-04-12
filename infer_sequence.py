@@ -10,7 +10,6 @@ Pipeline to get labeled region from depth assisted data..
 Authors: wangxiao05(wangxiao05@baidu.com)
 Date:    2018/07/23 13:59:19
 """
-import commands
 import glob
 import os
 import numpy as np
@@ -103,7 +102,7 @@ def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id
                                           rgb_seq, depth_seq,
                                           i, depth_cam_id)
             depth_res_seqs.setdefault(depth_cam_id, res_seq)
-        depth_res_seqs['combined'] = merge_multi_res_seqs(depth_res_seqs.values())
+        depth_res_seqs['combined'] = merge_multi_res_seqs(list(depth_res_seqs.values()))
 
         for k in depth_res_seqs:
             if k != 'combined':

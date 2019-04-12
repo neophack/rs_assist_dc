@@ -10,7 +10,6 @@ Pipeline to get labeled region from depth assisted data..
 Authors: wangxiao05(wangxiao05@baidu.com)
 Date:    2018/07/23 13:59:19
 """
-import commands
 import glob
 import os
 import numpy as np
@@ -20,9 +19,11 @@ import random
 
 def run_shell_command(cmd):
     """Run gen shell command."""
-    [status, output] = commands.getstatusoutput(cmd)
+    import subprocess
+    # [status, output] = commands.getstatusoutput(cmd)
+    r = subprocess.check_output(cmd.split(' '), shell=False)
     # print output
-    return status, output
+    return 0, r.decode('utf-8')
 
 
 def get_obj_region(intrinsic_path, extrinsic_path, rgb_path0, rgb_path1, depth_path0, depth_path1,
@@ -33,19 +34,20 @@ def get_obj_region(intrinsic_path, extrinsic_path, rgb_path0, rgb_path1, depth_p
                 '--depth_path0 %s --depth_path1 %s --depth_camid %d --rgb_camid %d')
     cmd_line = cmd_line % (bin_path, extrinsic_path, intrinsic_path, rgb_path0,
                            rgb_path1, depth_path0, depth_path1, depth_camid, rgb_camid)
-    print 'cmd_line:', cmd_line
+    print ('cmd_line:', cmd_line)
     if show_result:
         cmd_line += ' --show_result'
     # print cmd_line
+    print('cur dir: {}'.format(os.path.abspath(os.path.curdir)))
     status, output = run_shell_command(cmd_line)
-    print 'run_shell_command done:'
+    print ('run_shell_command done:')
     assert status == 0, str(status) + '\n' + output
     items = output.strip().split('\t')
     # print items[-1]
     if ':' not in items[-1]:
         return [], 0
     region = [tuple(e.split(',')) for e in items[-1].split(':') if e]
-    print 'items:', items[: -1]
+    print ('items:', items[: -1])
     region = [(float(x), float(y)) for x, y in region]
     region_diff = float(items[-2])
     return region, region_diff
@@ -57,7 +59,7 @@ def infer_object(region_info):
           ...
           ]
     """
-    print 'region_info', len(region_info)
+    print('region_info', len(region_info))
     rgb0, rgb1, depth0, depth1, region_raw, sum_depth_diff = region_info
     if not region_raw:
         res = dict(rgb0=rgb0,
@@ -124,12 +126,13 @@ def get_region_sequence(intrinsic_path, extrinsic_path, rgb_seq, depth_seq, rgb_
                                              depth_seq[i - 1], depth_seq[i], rgb_camid, depth_camid)
         region = list(set([(int(x), int(y)) for x, y in region]))
         res = (rgb_seq[i - 1], rgb_seq[i], depth_seq[i - 1], depth_seq[i], region, region_diff)
-        print len(region)
+        print(len(region))
         res_seq.append(infer_object(res))
     return res_seq
 
 
 def merge_multi_res_seqs(res_seq_list):
+    print('res_seq_list type: {}'.format(type(res_seq_list)))
     s = len(res_seq_list[0])
     for i in range(1, len(res_seq_list)):
         assert len(res_seq_list[i]) == s
@@ -257,7 +260,7 @@ def display_region_sequence(res_seq, suffix='', save_dir=None, rot_rect=False, d
             filepath = os.path.join(save_dir, '%s%s.jpg' % (name, suffix))
             cv2.imwrite(filepath, display_image)
         if show_each_step:
-            print 'show result'
+            print('show result')
             cv2.imshow('Show result', display_image)
             cv2.waitKey(0)
         count += 1
@@ -281,13 +284,13 @@ def test_get_region_sequence():
 
 
 def test():
-    print get_obj_region("./data/leftIntrinsic.txt", "./data/transsWorldToCam.txt",
+    print(get_obj_region("./data/leftIntrinsic.txt", "./data/transsWorldToCam.txt",
                          "./data/test_data/cam0/0001531476158412.jpg",
                          "./data/test_data/cam0/0001531476172966.jpg",
                          "./data/test_data/cam2/13-0_Depth.raw",
                          "./data/test_data/cam2/14-0_Depth.raw",
                          0, 2,
-                         show_result=True)
+                         show_result=True))
 
 
 if __name__ == '__main__':

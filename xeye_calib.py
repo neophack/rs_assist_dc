@@ -13,6 +13,7 @@ Date:    2018/08/21 14:06:23
 
 import cv2
 import numpy as np
+import base64
 
 
 def resize_xeye_image(data):

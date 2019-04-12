@@ -34,9 +34,9 @@ def get_calib_image():
     global calib_data_counter
     data_dir = calib_data_dir
     filename = str(10000000 + calib_data_counter)[1:]
-    # d['cam1_dept_file'] = b64read(os.path.join(data_dir, '4', 'cam0', filename + '.png'))
+    d['cam1_dept_file'] = b64read(os.path.join(data_dir, '4', 'cam0', filename + '.png'))
     d['cam1_color_file'] = b64read(os.path.join(data_dir, '2', 'cam0', filename + '.png'))
-    # d['cam2_dept_file'] = b64read(os.path.join(data_dir, '5', 'cam0', filename + '.png'))
+    d['cam2_dept_file'] = b64read(os.path.join(data_dir, '5', 'cam0', filename + '.png'))
     d['cam2_color_file'] = b64read(os.path.join(data_dir, '3', 'cam0', filename + '.png'))
     for i in range(2):
         d['rgb{}_color_file'.format(i)] = b64read(os.path.join(data_dir, str(i), 'cam0', filename + '.jpg'))
