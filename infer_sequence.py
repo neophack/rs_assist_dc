@@ -113,7 +113,12 @@ def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id
                                              draw_on_last=True,
                                              save_dir=save_dir,
                                              show_each_step=show_each_step)
-            result_imgs.extend(images)
+
+            result_imgs.append(dict(images=images,
+                                    combined=depth_res_seqs[k]))
+        # print('depth_res_seqs: {}'.format(depth_res_seqs['combined']))
+        # import pickle
+        # pickle.dump(depth_res_seqs['combined'], open('test.pkl', 'w'))
         return result_imgs
 
     pool = ThreadPool(6)
@@ -126,10 +131,11 @@ def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id
     pool.close()
     pool.join()
     display_images = []
-    for imgs in results:
-        print('imgs in result:', len(imgs))
-        display_images.extend(imgs)
-    return display_images
+    print('results: {}'.format(results))
+    agg = []
+    for r in results:
+        agg.extend(r)
+    return agg
 
 
 def infer(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,

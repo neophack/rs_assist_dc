@@ -77,7 +77,6 @@ def get_remote_images(ip):
     return d
 
 
-
 def run1():
     """Data collection pipeline."""
     from align_all_sensor import reconstruct_calib_data
@@ -153,6 +152,7 @@ def run1():
 
 def run2():
     """Data collection pipeline with label"""
+    from functools import partial
     from align_all_sensor import Calibrator
     from align_all_sensor import MultiCamGrabLabeler
     if sys.argv[1] == 'simulate':
@@ -163,8 +163,8 @@ def run2():
         get_image = get_collection_image
     else:
         base_dir = sys.argv[1]
-        cam_cap = importlib.import_module('aicam-server.cam_cap')
-        get_image = cam_cap.get_image
+        ip = sys.argv[2] if len(sys.argv) >= 3 else '127.0.0.1'
+        get_image = partial(get_remote_images, ip=ip)
         get_calib_image = get_image
         get_collection_image = get_image
 
@@ -210,8 +210,10 @@ def run2():
                     if current_label:
 
                         logger.info('  * input "e" to end program.')
-                        logger.info('  * press Return to collect image of current label.'.format(current_label))
-                        logger.info('  * input "-" to indicate last box is not right.'.format(current_label))
+                        logger.info(
+                            '  * press Return to collect image of current label.'.format(current_label))
+                        logger.info(
+                            '  * input "-" to indicate last box is not right.'.format(current_label))
                 else:
                     while True:
                         logger.info('Press Return to take the first background image...')
@@ -221,8 +223,7 @@ def run2():
                         else:
                             file_dict = get_collection_image()
                             labeler.add_files(file_dict, inp)
-                            images = labeler.gen_label()
-                            print('type: {}'.format(type(images)))
+                            results = labeler.gen_label()
                             items = []
                             background_image_taken = True
                             break
@@ -253,7 +254,10 @@ def run2():
                     # print 'file_dict', json.dumps(file_dict, indent=2)
 
                     labeler.add_files(file_dict, current_label)
-                    images = labeler.gen_label()
+                    results = labeler.gen_label()
+                    images = []
+                    for r in results:
+                        images.extend(r['images'])
                     labeler.show_images(images)
                 items = []
             elif inp == 'calib':

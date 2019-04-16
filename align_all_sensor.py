@@ -98,6 +98,7 @@ def reconstruct_calib_data(tm_file, src_dirs, align_offsets, dst_dir='tmp'):
                 dst_filepath = os.path.join(dirname, dst_filename)
                 resize_xeye_image_file(filepath, dst_filepath)
 
+
 def init_cam_set(file_dict):
     """Init cam ids.
 
@@ -125,9 +126,11 @@ def init_cam_set(file_dict):
 
 
 def test_init_cam_set():
-    keys = ['cam1_dept_file', 'cam1_color_file', 'cam2_dept_file', 'cam2_color_file', 'rgb0_color_file']
+    keys = ['cam1_dept_file', 'cam1_color_file',
+            'cam2_dept_file', 'cam2_color_file', 'rgb0_color_file']
     d = dict(zip(keys, keys))
     print(init_cam_set(d))
+
 
 class Calibrator(object):
     """The line, one label."""
@@ -185,7 +188,6 @@ class Calibrator(object):
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
         self.counter += 1
-
 
     def add_base64_files(self, file_dict):
         """Parse files to add."""
@@ -295,6 +297,7 @@ class MultiCamGrabLabeler(object):
             label_filename = str(10000000 + self.counter)[1:] + '.txt'
             with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'a') as fout:
                 fout.write('wrong_box+\n')
+
     def add_files(self, file_dict, label=''):
         # from xeye_calib import resize_xeye_image_file
         from xeye_calib import resize_rgb_b64
@@ -305,7 +308,7 @@ class MultiCamGrabLabeler(object):
         filename = str(10000000 + self.counter)[1:] + '.jpg'
         label_filename = str(10000000 + self.counter)[1:] + '.txt'
         for k, v in file_dict.items():
-            
+
             if k.startswith('cam'):
                 cam_id = self.src_keys_dict[k]
                 dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
@@ -395,11 +398,15 @@ class MultiCamGrabLabeler(object):
                 depth_file_seqs[i].append(os.path.join(
                     self.test_data_dir, str(depth_cam_id), filename))
 
-            return infer_sequence.infer_parallel(self.intrinsic_path, self.extrinsic_path,
-                                                 self.rgb_cam_list, self.rgb_of_depth_cam_list,
-                                                 rgb_file_seqs, depth_file_seqs,
-                                                 save_dir=self.result_dir,
-                                                 show_each_step=False)
+            infer_result = infer_sequence.infer_parallel(self.intrinsic_path,
+                                                         self.extrinsic_path,
+                                                         self.rgb_cam_list,
+                                                         self.rgb_of_depth_cam_list,
+                                                         rgb_file_seqs, depth_file_seqs,
+                                                         save_dir=self.result_dir,
+                                                         show_each_step=False)
+            return infer_result
+
 
     def show_images(self, images, resize_ratio=0.5, cols=2):
         import infer_sequence
@@ -464,22 +471,28 @@ def test_multicamgrablabeler():
                                    ]
                     }
         labeler.add_files(cam_data)
-        images = labeler.gen_label()
-        if images is None:
+        results = labeler.gen_label()
+        if not results:
             continue
+        images = []
+        for r in results:
+            images.extend(r['images'])
         infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=4)
 
 
-def rerun_multicamgrablabeler():
+def rerun_multicamgrablabeler(base_dir, num):
     """Generate simulate data_collection data and run calibrator."""
     import infer_sequence
-    base_dir = 'data/batch4'
-    test_dir = 'test_data'
-    labeler = MultiCamGrabLabeler(base_dir).init_from_test_data(test_dir)
-
-    images = labeler.gen_label(counter=2)
-    print('images lengh', len(images))
-    infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=4)
+    # base_dir = 'data/batch4'
+    collection_dir = 'test_data'
+    labeler = MultiCamGrabLabeler(base_dir).init_from_test_data(collection_dir)
+    num = int(num)
+    for i in range(2, num):
+        results = labeler.gen_label(counter=i)
+        images = []
+        for r in results:
+            images.extend(r['images'])
+        infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=2)
 
 
 def test_event():
@@ -499,7 +512,8 @@ def test_event():
 
 
 if __name__ == '__main__':
-    test_init_cam_set()
+    # test_init_cam_set()
+    rerun_multicamgrablabeler(sys.argv[1], sys.argv[2])
     # rerun_multicamgrablabeler()
     # print(test_multicamgrablabeler())
     # print(test_event())
