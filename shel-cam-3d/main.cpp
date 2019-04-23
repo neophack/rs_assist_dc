@@ -155,6 +155,15 @@ DEFINE_int32(depth_camid, 2, "cam id for depth images");
 DEFINE_int32(rgb_camid, 0, "cam id for rgb images");
 DEFINE_bool(show_result, false, "show result or not");
 
+void preset_window() {
+    cv::namedWindow("GetFocus", CV_WINDOW_NORMAL);
+    cv::Mat img = cv::Mat::zeros(100, 100, CV_8UC3);
+    cv::imshow("GetFocus", img);
+    cv::setWindowProperty("GetFocus", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+    cv::waitKey(1);
+    cv::setWindowProperty("GetFocus", CV_WND_PROP_FULLSCREEN, CV_WINDOW_NORMAL);
+    cv::destroyWindow("GetFocus");
+}
 
 int main(int argc, char **argv) {
     google::InitGoogleLogging(argv[0]);
@@ -264,11 +273,14 @@ int main(int argc, char **argv) {
         }
         std::cout << std::endl;
         if (FLAGS_show_result == true) {
+            preset_window();
+            cv::namedWindow("mask");
             cv::imshow("mask", mask);
             for(int i=0; i< region.size(); i++){
                 cv::circle(rgb_img, region[i], 2, cv::Scalar(0,0,255) );
             }
-            cv::imshow("img", rgb_img);
+            cv::namedWindow("ShowImg");
+            cv::imshow("ShowImg", rgb_img);
             cv::waitKey(0);
         }
 

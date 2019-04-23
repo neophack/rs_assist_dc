@@ -34,23 +34,35 @@ def get_obj_region(intrinsic_path, extrinsic_path, rgb_path0, rgb_path1, depth_p
                 '--depth_path0 %s --depth_path1 %s --depth_camid %d --rgb_camid %d')
     cmd_line = cmd_line % (bin_path, extrinsic_path, intrinsic_path, rgb_path0,
                            rgb_path1, depth_path0, depth_path1, depth_camid, rgb_camid)
-    print ('cmd_line:', cmd_line)
+    print('cmd_line:', cmd_line)
     if show_result:
         cmd_line += ' --show_result'
     # print cmd_line
     print('cur dir: {}'.format(os.path.abspath(os.path.curdir)))
     status, output = run_shell_command(cmd_line)
-    print ('run_shell_command done:')
+    print('run_shell_command done:')
     assert status == 0, str(status) + '\n' + output
     items = output.strip().split('\t')
     # print items[-1]
     if ':' not in items[-1]:
         return [], 0
     region = [tuple(e.split(',')) for e in items[-1].split(':') if e]
-    print ('items:', items[: -1])
+    print('items:', items[: -1])
     region = [(float(x), float(y)) for x, y in region]
     region_diff = float(items[-2])
     return region, region_diff
+
+
+def preset_window():
+    """Preset window."""
+    # img = cv2.imread('data/batch4/test_data/0/0000001.jpg')
+    img = np.zeros([100, 100, 3], dtype=np.uint8) * 255
+    cv2.namedWindow("GetFocus", cv2.WINDOW_NORMAL)
+    cv2.imshow("GetFocus", img)
+    cv2.setWindowProperty("GetFocus", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.waitKey(1)
+    cv2.setWindowProperty("GetFocus", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
+    cv2.destroyWindow("GetFocus")
 
 
 def infer_object(region_info):
@@ -249,6 +261,7 @@ def display_region_sequence(res_seq, suffix='', save_dir=None, rot_rect=False, d
         else:
             display_image = cv2.imread(background_info['rgb1'])
     display_images = []
+
     for res in res_seq:
         if draw_on_last:
             display_image = make_display_image(res, rot_rect, display_image)
@@ -259,11 +272,14 @@ def display_region_sequence(res_seq, suffix='', save_dir=None, rot_rect=False, d
         if save_dir is not None:
             filepath = os.path.join(save_dir, '%s%s.jpg' % (name, suffix))
             cv2.imwrite(filepath, display_image)
-        if show_each_step:
-            print('show result')
+
+        count += 1
+    if show_each_step:
+        preset_window()
+        for display_image in display_images:
+            cv2.namedWindow("Show result")
             cv2.imshow('Show result', display_image)
             cv2.waitKey(0)
-        count += 1
     return display_images
 
 
@@ -278,7 +294,7 @@ def test_get_region_sequence():
     depth_seq = sorted(glob.glob(os.path.join(depth_dir, '*')))
     res_seq = get_region_sequence(intrinsic_path, extrinsic_path, rgb_seq, depth_seq,
                                   0, 2)
-    # print res_seq
+    print(res_seq)
     display_region_sequence(res_seq, rot_rect=True)
     # print 'infer:', infer
 
@@ -293,5 +309,64 @@ def test():
                          show_result=True))
 
 
+def test1():
+    d = '../sku10/'
+    instrinsic_file = os.path.join(d, 'parameters/leftIntrinsic.txt')
+    extrinsic_file = os.path.join(d, 'parameters/transsWorldToCam.txt')
+    rgb0 = os.path.join(d, 'test_data/3/0000000.jpg')
+    rgb1 = os.path.join(d, 'test_data/3/0000001.jpg')
+    depth0 = os.path.join(d, 'test_data/5/0000000.jpg')
+    depth1 = os.path.join(d, 'test_data/5/0000001.jpg')
+    r = get_obj_region(instrinsic_file, extrinsic_file, rgb0, rgb1, depth0, depth1,
+                       3, 3,
+                       show_result=True)
+    print(r)
+
+
+def test2():
+    d = '../sku10/'
+    instrinsic_file = os.path.join(d, 'parameters/leftIntrinsic.txt')
+    extrinsic_file = os.path.join(d, 'parameters/transsWorldToCam.txt')
+    rgb0 = os.path.join(d, 'test_data/4/0000000.jpg')
+    rgb1 = os.path.join(d, 'test_data/4/0000001.jpg')
+    depth0 = os.path.join(d, 'test_data/6/0000000.jpg')
+    depth1 = os.path.join(d, 'test_data/6/0000001.jpg')
+    r = get_obj_region(instrinsic_file, extrinsic_file, rgb0, rgb1, depth0, depth1,
+                       4, 4,
+                       show_result=True)
+    print(r)
+
+
+def test3():
+    d = '../sku10/'
+    intrinsic_path = os.path.join(d, 'parameters/leftIntrinsic.txt')
+    extrinsic_path = os.path.join(d, 'parameters/transsWorldToCam.txt')
+    rgb_dir = os.path.join(d, 'test_data/3')
+    depth_dir = os.path.join(d, 'test_data/5')
+
+    rgb_seq = sorted(glob.glob(os.path.join(rgb_dir, '*.jpg')))
+    depth_seq = sorted(glob.glob(os.path.join(depth_dir, '*.jpg')))
+    res_seq = get_region_sequence(intrinsic_path, extrinsic_path, rgb_seq, depth_seq,
+                                  3, 3)
+    display_region_sequence(res_seq, rot_rect=True)
+    # print 'infer:', infer
+
+
+def test4():
+    d = '../sku10/'
+    intrinsic_path = os.path.join(d, 'parameters/leftIntrinsic.txt')
+    extrinsic_path = os.path.join(d, 'parameters/transsWorldToCam.txt')
+    rgb_dir = os.path.join(d, 'test_data/2')
+    depth_dir = os.path.join(d, 'test_data/6')
+
+    rgb_seq = sorted(glob.glob(os.path.join(rgb_dir, '*.jpg')))
+    depth_seq = sorted(glob.glob(os.path.join(depth_dir, '*.jpg')))
+    res_seq = get_region_sequence(intrinsic_path, extrinsic_path, rgb_seq, depth_seq,
+                                  2, 4)
+    display_region_sequence(res_seq, rot_rect=True)
+    # print 'infer:', infer
+
+
+
 if __name__ == '__main__':
-    test_get_region_sequence()
+    test2()

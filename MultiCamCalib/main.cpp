@@ -59,6 +59,18 @@ DEFINE_int32(height, 480, "image height");
 
 // [NOTE] Assume 5x7 april tag is used.
 //const int kFullCorners = 5 * 7 * 4;
+
+void preset_window() {
+    cv::namedWindow("GetFocus", CV_WINDOW_NORMAL);
+    cv::Mat img = cv::Mat::zeros(100, 100, CV_8UC3);
+    cv::imshow("GetFocus", img);
+    cv::setWindowProperty("GetFocus", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+    cv::waitKey(1);
+    cv::setWindowProperty("GetFocus", CV_WND_PROP_FULLSCREEN, CV_WINDOW_NORMAL);
+    cv::destroyWindow("GetFocus");
+}
+
+
 cv::Point3f id2coordinate(const int det_id) {
     // compute 3d position
     // tag corner ids are
@@ -372,6 +384,9 @@ int main(int argc, char** argv) {
             // 第几个target
             g_num_targets = 0;
 
+            if (FLAGS_show_det) {
+                preset_window();
+            }
             for (auto it_path : file_names_vec) {
                 cv::Mat img_gray_original = cv::imread(it_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
                 cv::Mat img_gray = img_gray_original;
@@ -435,7 +450,7 @@ int main(int argc, char** argv) {
                     for (size_t it_corner = 0; it_corner < corner_positions.size(); ++it_corner) {
                         cv::circle(detection_img, corner_positions[it_corner], 2, cv::Scalar(0, 0xff, 0));
                     }
-
+                    cv::namedWindow("detection");
                     cv::imshow("detection", detection_img);
                     std::string fp = "LR_" + std::to_string(k) + "Target_" + std::to_string(g_num_targets) + "Cam_" + \
                                 std::to_string(lr) + ".png";
@@ -852,6 +867,7 @@ int main(int argc, char** argv) {
 
     // 重投影误差
     if (FLAGS_show_reproj_det) {
+        preset_window();
         for (int k = 0; k < camera_rig; k++) {
             for (int lr = 0; lr < FLAGS_num_camera; lr++) {
                 boost::filesystem::path folder_path(FLAGS_folder_path + "/" + lr_folders[k][lr]);
@@ -953,7 +969,7 @@ int main(int argc, char** argv) {
                             cv::line(_img, corner_positions[it_corner],
                                      corner_reproj[it_corner], cv::Scalar(0, 0, 0xff));
                         }
-
+                        cv::namedWindow("refine");
                         cv::imshow("refine", _img);
                         std::string fp = "refine_LR_" + std::to_string(k) + "Cam_" + std::to_string(
                                         lr) + "Target_" + std::to_string(j) + ".png";

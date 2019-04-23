@@ -55,6 +55,18 @@ def test_get_region_sequence():
                                     draw_on_last=True)
 
 
+def preset_window():
+    """Preset window."""
+    img = np.ones([100, 100, 3], dtype=np.uint8) * 255
+    cv2.namedWindow("GetFocus", cv2.WINDOW_NORMAL)
+    cv2.imshow("GetFocus", img)
+    cv2.setWindowProperty("GetFocus", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.setWindowProperty("GetFocus", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.waitKey(1)
+    cv2.setWindowProperty("GetFocus", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
+    cv2.destroyWindow("GetFocus")
+
+
 def show_multi_images(display_images, resize_ratio=0.5, cols=2):
     if not display_images:
         return None
@@ -82,6 +94,8 @@ def show_multi_images(display_images, resize_ratio=0.5, cols=2):
         col_images.append(np.hstack(row_images))
     img = np.vstack(col_images)
     print(img.shape)
+    preset_window()
+    cv2.namedWindow('test')
     cv2.imshow('test', img)
     cv2.waitKey(0)
 

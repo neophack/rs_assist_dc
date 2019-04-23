@@ -135,7 +135,9 @@ def test_init_cam_set():
 class Calibrator(object):
     """The line, one label."""
 
-    def __init__(self, dst_dir, resize_xeye):
+    def __init__(self, dst_dir=None, resize_xeye=True):
+        if dst_dir is None:
+            return
         self.dst_dir = dst_dir
         self.calib_data_dir = os.path.join(dst_dir, 'calib_data')
         self.src_keys = None
@@ -145,6 +147,15 @@ class Calibrator(object):
         # if os.path.exists(self.record_path):
         #     with open(self.record_path, 'w') as _:
         #         pass
+
+    def init_from_data(self, calib_data_dir_name):
+        """Init from test data after calibration."""
+        self.dst_dir = os.path.dirname(calib_data_dir_name)
+        self.calib_data_dir = calib_data_dir_name
+        self.counter = len(glob.glob(os.path.join(self.calib_data_dir, '0', 'cam0', '*.jpg')))
+        cam_dirs = sorted(glob.glob(os.path.join(self.dst_dir, 'calib_data/*')))
+        self.rgb_cam_list = [int(os.path.basename(e)) for e in cam_dirs if os.path.isdir(e)]
+        return self
 
     def add_files(self, file_dict):
         """Parse files to add."""
@@ -249,6 +260,24 @@ class Calibrator(object):
         assert os.path.exists(os.path.join(self.dst_dir, 'parameters/leftIntrinsic.txt')), output
         assert os.path.exists(os.path.join(self.dst_dir, 'parameters/transsWorldToCam.txt')), output
         return 0, output
+
+
+    def show_images(self, resize_ratio=0.5, cols=4):
+        import cv2
+        import infer_sequence
+        print(self.counter)
+        for i in range(self.counter):
+            images = []
+            for j in self.rgb_cam_list:
+                n = str(10000000 + i + 1)[1:]
+                path = os.path.join(self.calib_data_dir, str(j), 'cam0', n)
+                if not os.path.exists(path + '.jpg'):
+                    path = path + '.png'
+                else:
+                    path = path + '.jpg'
+                print(path)
+                images.append(cv2.imread(path))
+            infer_sequence.show_multi_images(images, resize_ratio, cols)
 
 
 class MultiCamGrabLabeler(object):
@@ -407,7 +436,6 @@ class MultiCamGrabLabeler(object):
                                                          show_each_step=False)
             return infer_result
 
-
     def show_images(self, images, resize_ratio=0.5, cols=2):
         import infer_sequence
         logger.info('show image. image size: {}'.format(len(images)))
@@ -493,6 +521,16 @@ def rerun_multicamgrablabeler(base_dir, num):
         for r in results:
             images.extend(r['images'])
         infer_sequence.show_multi_images(images, resize_ratio=0.5, cols=2)
+
+
+def rerun_calibrator(base_dir):
+    """Generate simulate data_collection data and run calibrator."""
+    import infer_sequence
+    # base_dir = 'data/batch4'
+    collection_dir = 'calib_data'
+    calib = Calibrator().init_from_data(os.path.join(base_dir, collection_dir))
+    # calib.gen_calib_parameters()
+    calib.show_images()
 
 
 def test_event():
