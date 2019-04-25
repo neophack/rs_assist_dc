@@ -295,6 +295,9 @@ class MultiCamGrabLabeler(object):
         self.counter = 0
         self.labels = []
         self.resize_xeye = resize_xeye
+        # mode: 1, every image is compared to the background image
+        #       2, every image is compared to the previous image
+        self.mode = 1
 
     def gen_test_data_dir_name(self):
         dir_name = os.path.join(self.base_dir, 'test_data')
@@ -410,7 +413,10 @@ class MultiCamGrabLabeler(object):
             for i, cam_id in enumerate(self.rgb_cam_list):
                 if len(rgb_file_seqs) <= i:
                     rgb_file_seqs.append([])
-                filename = str(10000000 + counter - 2)[1:] + '.jpg'
+                if self.mode == 2:
+                    filename = str(10000000 + counter - 2)[1:] + '.jpg'
+                else:
+                    filename = str(10000000)[1:] + '.jpg'
                 rgb_file_seqs[i].append(os.path.join(self.test_data_dir, str(cam_id), filename))
                 filename = str(10000000 + counter - 1)[1:] + '.jpg'
                 rgb_file_seqs[i].append(os.path.join(self.test_data_dir, str(cam_id), filename))
@@ -420,7 +426,10 @@ class MultiCamGrabLabeler(object):
                 print('i, cam_id', i, cam_id)
                 if len(depth_file_seqs) <= i:
                     depth_file_seqs.append([])
-                filename = str(10000000 + counter - 2)[1:] + '.jpg'
+                if self.mode == 2:
+                    filename = str(10000000 + counter - 2)[1:] + '.jpg'
+                else:
+                    filename = str(10000000)[1:] + '.jpg'
                 depth_file_seqs[i].append(os.path.join(
                     self.test_data_dir, str(depth_cam_id), filename))
                 filename = str(10000000 + counter - 1)[1:] + '.jpg'
