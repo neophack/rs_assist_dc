@@ -18,6 +18,8 @@ import numpy as np
 import logging
 import subprocess
 import base64
+import json_tricks as json
+from copy import deepcopy
 
 
 logger = logging.getLogger()
@@ -261,7 +263,6 @@ class Calibrator(object):
         assert os.path.exists(os.path.join(self.dst_dir, 'parameters/transsWorldToCam.txt')), output
         return 0, output
 
-
     def show_images(self, resize_ratio=0.5, cols=4):
         import cv2
         import infer_sequence
@@ -283,11 +284,11 @@ class Calibrator(object):
 class MultiCamGrabLabeler(object):
     """One line, one label."""
 
-    def __init__(self, base_dir, test_data_dir_name='test_data', resize_xeye=True):
+    def __init__(self, base_dir, data_dir, resize_xeye=True):
         pass
         self.base_dir = base_dir
         self.param_dir = os.path.join(base_dir, 'parameters')
-        self.test_data_dir = self.gen_test_data_dir_name()
+        self.test_data_dir = os.path.join(base_dir, data_dir)
         self.intrinsic_path = os.path.join(self.param_dir, 'leftIntrinsic.txt')
         self.extrinsic_path = os.path.join(self.param_dir, 'transsWorldToCam.txt')
         self.result_dir = os.path.join(base_dir, 'result')
@@ -297,7 +298,10 @@ class MultiCamGrabLabeler(object):
         self.resize_xeye = resize_xeye
         # mode: 1, every image is compared to the background image
         #       2, every image is compared to the previous image
+        #       3. every image is compared to the background image with the same
+        #          filename with _bg.jpg suffix
         self.mode = 1
+        self.background_taken = False
 
     def gen_test_data_dir_name(self):
         dir_name = os.path.join(self.base_dir, 'test_data')
@@ -309,10 +313,10 @@ class MultiCamGrabLabeler(object):
             dir_name += str(new_num)
         return dir_name
 
-    def init_from_test_data(self, test_data_dir_name):
+    def init_from_test_data(self, data_dir):
         """Init from test data after calibration."""
         assert(os.path.exists(self.intrinsic_path))
-        self.test_data_dir = os.path.join(self.base_dir, test_data_dir_name)
+        self.test_data_dir = os.path.join(self.base_dir, data_dir)
         rgb_num = int(open(self.intrinsic_path).readline().rstrip())
         total_cam_num = len(glob.glob(os.path.join(self.test_data_dir, '*')))
         depth_cam_num = total_cam_num - rgb_num
@@ -337,8 +341,12 @@ class MultiCamGrabLabeler(object):
             self.src_keys, self.rgb_cam_list, self.rgb_of_depth_cam_list = init_cam_set(file_dict)
             self.src_keys_dict = {v: i for i, v in enumerate(self.src_keys)}
             logger.info('Init MultiCamGrabLabeler done.')
-        filename = str(10000000 + self.counter)[1:] + '.jpg'
-        label_filename = str(10000000 + self.counter)[1:] + '.txt'
+        if self.mode == 3 and self.background_taken is False:
+            filename = str(10000000 + self.counter)[1:] + '_bg.jpg'
+            label_filename = str(10000000 + self.counter)[1:] + '_bg.txt'
+        else:
+            filename = str(10000000 + self.counter)[1:] + '.jpg'
+            label_filename = str(10000000 + self.counter)[1:] + '.txt'
         for k, v in file_dict.items():
 
             if k.startswith('cam'):
@@ -351,7 +359,8 @@ class MultiCamGrabLabeler(object):
                 with open(dst_path, 'wb') as fout:
                     fout.write(base64.b64decode(v))
                 if label:
-                    with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'w') as fout:
+                    dst_label_path = os.path.join(self.test_data_dir, str(cam_id), label_filename)
+                    with open(dst_label_path, 'w') as fout:
                         fout.write(label)
             elif k.startswith('rgb'):
                 cam_id = self.src_keys_dict[k]
@@ -364,13 +373,20 @@ class MultiCamGrabLabeler(object):
                     with open(dst_path, 'wb') as fout:
                         fout.write(base64.b64decode(v))
                 if label:
-                    with open(os.path.join(self.test_data_dir, str(cam_id), label_filename), 'w') as fout:
+                    dst_label_path = os.path.join(self.test_data_dir, str(cam_id), label_filename)
+                    with open(dst_label_path, 'w') as fout:
                         fout.write(label + '\n')
             else:
                 logger.warn('Unrocognize key: {}'.format(k))
                 return
-
-        self.counter += 1
+        if self.mode == 3:
+            if self.background_taken is False:
+                self.background_taken = True
+            else:
+                self.background_taken = False
+                self.counter += 1
+        else:
+            self.counter += 1
 
     def add_base64_files(self, file_dict, label=''):
         from xeye_calib import resize_xeye_image_file
@@ -392,7 +408,6 @@ class MultiCamGrabLabeler(object):
                     dst_path = os.path.join(self.test_data_dir, str(cam_id), filename)
                     if not os.path.exists(os.path.dirname(dst_path)):
                         os.makedirs(os.path.dirname(dst_path))
-                    print(imgpath, dst_path)
                     if self.resize_xeye:
                         resize_xeye_image_file(imgpath, dst_path)
                     else:
@@ -406,27 +421,32 @@ class MultiCamGrabLabeler(object):
         import infer_sequence
         if counter is None:
             counter = self.counter
-        if counter > 1:
+        if self.mode == 3 or counter > 1:
             rgb_file_seqs = []
             depth_file_seqs = []
-
+            label_files = []
             for i, cam_id in enumerate(self.rgb_cam_list):
                 if len(rgb_file_seqs) <= i:
                     rgb_file_seqs.append([])
-                if self.mode == 2:
+                if self.mode == 3:
+                    filename = str(10000000 + counter - 1)[1:] + '_bg.jpg'
+                elif self.mode == 2:
                     filename = str(10000000 + counter - 2)[1:] + '.jpg'
                 else:
                     filename = str(10000000)[1:] + '.jpg'
                 rgb_file_seqs[i].append(os.path.join(self.test_data_dir, str(cam_id), filename))
                 filename = str(10000000 + counter - 1)[1:] + '.jpg'
                 rgb_file_seqs[i].append(os.path.join(self.test_data_dir, str(cam_id), filename))
-
+                label_filename = str(10000000 + counter - 1)[1:] + '.txt'
+                label_filepath = os.path.join(self.test_data_dir, str(cam_id), label_filename)
+                label_files.append(label_filepath)
             for i, cam_id in enumerate(self.rgb_of_depth_cam_list):
                 depth_cam_id = cam_id + len(self.rgb_of_depth_cam_list)
-                print('i, cam_id', i, cam_id)
                 if len(depth_file_seqs) <= i:
                     depth_file_seqs.append([])
-                if self.mode == 2:
+                if self.mode == 3:
+                    filename = str(10000000 + counter - 1)[1:] + '_bg.jpg'
+                elif self.mode == 2:
                     filename = str(10000000 + counter - 2)[1:] + '.jpg'
                 else:
                     filename = str(10000000)[1:] + '.jpg'
@@ -443,6 +463,11 @@ class MultiCamGrabLabeler(object):
                                                          rgb_file_seqs, depth_file_seqs,
                                                          save_dir=self.result_dir,
                                                          show_each_step=False)
+            for i, filepath in enumerate(label_files):
+                with open(filepath, 'w') as fout:
+                    r = deepcopy(infer_result[i])
+                    r.pop('images')
+                    fout.write(json.dumps(r))
             return infer_result
 
     def show_images(self, images, resize_ratio=0.5, cols=2):

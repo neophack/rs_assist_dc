@@ -41,7 +41,7 @@ def test_get_region_sequence():
             depth_seq = sorted(glob.glob(os.path.join(depth_dir, '*')))
             res_seq = get_region_sequence(intrinsic_path, extrinsic_path, rgb_seq, depth_seq,
                                           i, depth_cam_id)
-            print('depth_cam_id:', depth_cam_id)
+            # print('depth_cam_id:', depth_cam_id)
             depth_res_seqs.setdefault(depth_cam_id, res_seq)
             # cam_res_seqs.append(res_seq)
             # print res_seq
@@ -93,12 +93,16 @@ def show_multi_images(display_images, resize_ratio=0.5, cols=2):
     if row_images:
         col_images.append(np.hstack(row_images))
     img = np.vstack(col_images)
-    print(img.shape)
+    # print(img.shape)
     preset_window()
+    # cv2.startWindowThread()
     cv2.namedWindow('test')
     cv2.imshow('test', img)
     cv2.waitKey(0)
-
+    print('wait done')
+    # cv2.destroyAllWindows()
+    cv2.destroyWindow('test')
+    print('windows destroyed')
 
 def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id_list,
                    rgb_file_seqs, depth_file_seqs, save_dir=None, show_each_step=True):
@@ -140,12 +144,10 @@ def infer_parallel(intrinsic_path, extrinsic_path, rgb_cam_id_list, depth_cam_id
     for i in rgb_cam_id_list:
         args.append([intrinsic_path, extrinsic_path, i, depth_cam_id_list, rgb_file_seqs,
                      depth_file_seqs])
-    print('args num', len(args))
+    # print('args num', len(args))
     results = pool.map(lambda x: _infer(*x), args)
     pool.close()
     pool.join()
-    display_images = []
-    print('results: {}'.format(results))
     agg = []
     for r in results:
         agg.extend(r)
